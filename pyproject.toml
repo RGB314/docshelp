@@ -1,0 +1,60 @@
+[project]
+name = "docshelp"
+version = "0.1.0"
+description = "A staged demo of the LangChain ecosystem: LangChain, LangGraph, LangSmith and LangGraph Server"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+dependencies = [
+    "fastembed>=0.8.1",
+    "langchain>=1.4.2",
+    "langchain-text-splitters>=1.1.2",
+    "langgraph>=1.2.12",
+    "langgraph-cli[inmem]>=0.4.32",
+    "langgraph-sdk>=0.4.5",
+    "langsmith>=0.14.1",
+    "python-dotenv>=1.2.3",
+]
+
+# One extra per model provider: `uv sync --extra ollama` (or `--all-extras`).
+[project.optional-dependencies]
+anthropic = ["langchain-anthropic>=1.7.4"]
+openai = ["langchain-openai>=1.0.0"]
+google = ["langchain-google-genai>=3.0.0"]
+groq = ["langchain-groq>=1.0.0"]
+ollama = ["langchain-ollama>=1.0.0"]
+
+[build-system]
+requires = ["uv_build>=0.12.19,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "poethepoet>=0.48.0",
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "e2e: end-to-end tests that run stages as processes and start a real LangGraph Server (`poe e2e`)",
+]
+
+# Cross-shell task runner: `uv run poe <task>` behaves the same in PowerShell, cmd, Git Bash, macOS and Linux.
+# `uv run poe` with no task lists them all.
+[tool.poe.env]
+PYTHONUTF8 = "1"
+
+[tool.poe.tasks]
+init-env = { script = "docshelp.tasks:init_env_main", help = "Create .env from .env.example (never overwrites)" }
+doctor = { script = "docshelp.tasks:doctor_cli", help = "Check which model providers are installed and configured" }
+setup = { sequence = ["init-env", "doctor"], help = "First-time setup: create .env, then check providers" }
+test = { cmd = "pytest -m \"not e2e\"", help = "Unit and integration tests: offline, no API keys, ~1 min" }
+e2e = { cmd = "pytest -m e2e", help = "End-to-end tests: stages as processes + real LangGraph Server (no keys; real-model runs need DOCSHELP_E2E_MODEL + Ollama)" }
+stage1 = { cmd = "python stages/01_langchain_basics.py", help = "LangChain basics" }
+stage2 = { cmd = "python stages/02_langchain_rag.py", help = "LangChain RAG + tool-calling agent" }
+stage3 = { cmd = "python stages/03_langgraph_agent.py", help = "LangGraph agent (add --auto-approve to skip the prompt)" }
+stage4 = { cmd = "python stages/04_langsmith_eval.py", help = "LangSmith datasets and evaluation" }
+stage5 = { cmd = "python stages/05_langgraph_server.py", help = "LangGraph SDK client (start `poe server` first)" }
+server = { cmd = "langgraph dev", help = "LangGraph Server + Studio on http://127.0.0.1:2024" }

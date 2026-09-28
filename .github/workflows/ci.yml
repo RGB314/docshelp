@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Native runs with uv on every OS. No API keys: real-model E2E tests skip here.
+  test:
+    name: test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v10.2.0  # setup-uv publishes full version tags only (no moving major tag)
+        with:
+          enable-cache: true
+
+      - name: Install (locked, all providers)
+        run: uv sync --frozen --all-extras
+
+      - name: Unit and integration tests
+        run: uv run poe test
+
+      - name: End-to-end tests (stages as processes, real LangGraph Server, no keys)
+        run: uv run poe e2e
+
+  # The Docker path end to end, including every stage against a real local model (Ollama), still keyless.
+  docker-e2e:
+    name: docker-e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      E2E_MODEL: qwen2.5:0.5b
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Write a keyless .env that uses the local model
+        run: |
+          {
+            echo "DOCSHELP_PROVIDER=ollama"
+            echo "DOCSHELP_MODEL=$E2E_MODEL"
+            echo "DOCSHELP_FAST_MODEL=$E2E_MODEL"
+            echo "DOCSHELP_MAX_TOKENS=512"
+            echo "LANGSMITH_TRACING=false"
+          } > .env
+
+      - name: Build the image
+        run: docker compose build
+
+      - name: Unit and integration tests in the container
+        run: docker compose run --rm -T app poe test
+
+      - name: Start Ollama and pull a small model
+        run: |
+          docker compose --profile ollama up -d ollama
+          for i in $(seq 1 30); do docker compose exec -T ollama ollama list && break; sleep 2; done
+          docker compose exec -T ollama ollama pull "$E2E_MODEL"
+
+      - name: End-to-end tests in the container, including every stage against the real model
+        run: docker compose run --rm -T -e DOCSHELP_E2E_MODEL="$E2E_MODEL" app poe e2e -v -rs
+
+      - name: Compose stack - LangGraph Server service + stage 5 client over the compose network
+        run: |
+          docker compose up -d --wait server
+          docker compose run --rm -T app poe stage5
+
+      - name: Show container logs
+        if: failure()
+        run: docker compose --profile ollama logs --no-color
+
+      - name: Tear down
+        if: always()
+        run: docker compose --profile ollama down -v
