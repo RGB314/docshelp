@@ -13,6 +13,34 @@ Each stage adds one product from the LangChain ecosystem, so you can see exactly
 | 4 | **LangSmith** | Tracing of every run, test datasets, automated evaluation, side-by-side comparison of experiments | `stages/04_langsmith_eval.py` |
 | 5 | **LangGraph Server + Studio** | The same graph served as an API (threads, runs, streaming, interrupts) plus a visual debugger | `langgraph.json` + `stages/05_langgraph_server.py` |
 
+## Contents
+
+<!-- toc -->
+- [How the pieces fit together](#how-the-pieces-fit-together)
+- [Runs the same on Windows, macOS and Linux](#runs-the-same-on-windows-macos-and-linux)
+- [Prerequisites](#prerequisites)
+  - [Supported model providers](#supported-model-providers)
+  - [1. Install uv](#1-install-uv-one-time-option-a-only)
+  - [2. Set up your model provider](#2-set-up-your-model-provider)
+  - [3. (Optional) Get a LangSmith API key](#3-optional-get-a-langsmith-api-key)
+- [Setup](#setup)
+  - [Option A: uv](#option-a-uv)
+  - [Option B: Docker Compose](#option-b-docker-compose)
+  - [Option C: Dev Container / GitHub Codespaces](#option-c-dev-container--github-codespaces)
+  - [Configure `.env`](#configure-env-all-options)
+- [Running the stages](#running-the-stages)
+  - [Stage 1: LangChain basics](#stage-1-langchain-basics)
+  - [Stage 2: RAG and a tool-calling agent](#stage-2-rag-and-a-tool-calling-agent)
+  - [Stage 3: LangGraph agent](#stage-3-langgraph-agent)
+  - [Stage 4: LangSmith evaluation](#stage-4-langsmith-evaluation)
+  - [Stage 5: LangGraph Server and Studio](#stage-5-langgraph-server-and-studio)
+- [Project layout](#project-layout)
+- [Tests](#tests)
+- [How the provider layer is designed](#how-the-provider-layer-is-designed)
+- [Contributing](#contributing)
+- [Notes and next steps](#notes-and-next-steps)
+<!-- tocstop -->
+
 ## How the pieces fit together
 
 ```mermaid
