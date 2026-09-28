@@ -1,0 +1,11 @@
+[
+  {"question": "How long do deleted notes stay in the trash?", "answer": "30 days, after which they are permanently deleted. Admins can restore them before then.", "source": "07-troubleshooting.md"},
+  {"question": "Is there a way to get my money back if I don't like the Team plan?", "answer": "Yes, a full refund is available within 14 days of the first Team plan payment.", "source": "02-plans-and-billing.md"},
+  {"question": "Can I work offline in the web app?", "answer": "No. Offline mode is only available in the desktop and mobile apps, for notebooks marked Available offline.", "source": "03-sync-and-offline.md"},
+  {"question": "Which plan do I need for Okta SSO?", "answer": "Enterprise. SAML SSO (including Okta) and SCIM are Enterprise-only.", "source": "06-security.md"},
+  {"question": "What happens if I call the API too often on the Team plan?", "answer": "The Team plan allows 600 requests per minute; beyond that the API returns HTTP 429 with a Retry-After header.", "source": "08-api.md"},
+  {"question": "How long is the workspace export download link valid?", "answer": "7 days.", "source": "05-import-export.md"},
+  {"question": "Who can transfer ownership of a workspace, and to whom?", "answer": "Only the current owner, and the new owner must already be an Admin.", "source": "04-sharing-and-permissions.md"},
+  {"question": "My sync icon has a red slash. What should I try?", "answer": "Check the connection/VPN/proxy (port 443), sign out and back in, then on desktop use Help > Reset local cache; unsynced edits are backed up to a nimbus-recovery folder.", "source": "07-troubleshooting.md"},
+  {"question": "Can Nimbus host my data in Japan?", "answer": "The docs only mention US (default) and EU (Frankfurt, Enterprise) hosting, so Japan hosting isn't offered according to the docs.", "source": "06-security.md"}
+]

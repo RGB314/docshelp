@@ -1,0 +1,16 @@
+# Never bake secrets or machine-local state into the image.
+.env
+.env.*
+!.env.example
+.venv
+.cache
+.git
+.claude
+.idea
+.vscode
+.pytest_cache
+.langgraph_api
+__pycache__
+*.pyc
+data/tickets.jsonl
+graph.mmd

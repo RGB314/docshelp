@@ -1,0 +1,21 @@
+# Python / uv
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secrets: keys live only in .env or your shell environment
+.env
+.env.*
+!.env.example
+
+# Local caches and generated files
+.cache/
+.langgraph_api/
+data/tickets.jsonl
+graph.mmd
+
+# Personal editor / assistant settings
+.claude/settings.local.json
+.vscode/
+.idea/

@@ -1,0 +1,57 @@
+# Run the whole demo in containers, identically on any OS with Docker.
+#
+#   docker compose build
+#   docker compose run --rm app poe doctor          # check your provider setup
+#   docker compose run --rm app poe stage1          # ...stage1 to stage4, and `poe test`
+#   docker compose up -d server                     # LangGraph Server + Studio on http://127.0.0.1:2024
+#   docker compose run --rm app poe stage5          # SDK client talking to that server
+#   docker compose --profile ollama up -d ollama    # optional: free local models in a container
+#
+# Keys and settings come from your .env file (optional) and/or your shell environment.
+
+name: docshelp
+
+x-docshelp: &docshelp
+  build: .
+  image: docshelp:latest
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    # Inside containers, "localhost" is the container itself, so reach other services by name.
+    LANGGRAPH_URL: http://server:2024
+    # Default: the `ollama` service below. Ollama running on your host instead?
+    # Set DOCKER_OLLAMA_BASE_URL=http://host.docker.internal:11434
+    OLLAMA_BASE_URL: ${DOCKER_OLLAMA_BASE_URL:-http://ollama:11434}
+  extra_hosts:
+    - "host.docker.internal:host-gateway"  # makes host.docker.internal work on Linux too
+
+services:
+  app:
+    <<: *docshelp
+    command: ["poe"]
+    stdin_open: true  # stage 3 asks you to approve the ticket
+    tty: true
+
+  server:
+    <<: *docshelp
+    command: ["langgraph", "dev", "--host", "0.0.0.0", "--port", "2024", "--no-browser", "--no-reload"]
+    ports:
+      - "2024:2024"
+    healthcheck:  # lets `docker compose up -d --wait server` block until the API answers
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:2024/ok')"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ollama"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+
+volumes:
+  ollama-models:
