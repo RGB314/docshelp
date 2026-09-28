@@ -15,7 +15,10 @@ __pycache__/
 data/tickets.jsonl
 graph.mmd
 
-# Personal editor / assistant settings
-.claude/settings.local.json
+# Personal editor / assistant settings.
+# Claude Code writes personal and runtime files into .claude/ (settings.local.json, lock files, ...):
+# ignore them all, but keep team-shared config such as .claude/settings.json committable.
+.claude/*
+!.claude/settings.json
 .vscode/
 .idea/

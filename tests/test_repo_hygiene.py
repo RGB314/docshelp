@@ -1,6 +1,7 @@
 """Guards that keep the repo safe and portable to share publicly."""
 
 import re
+import subprocess
 import tomllib
 from pathlib import Path
 
@@ -39,8 +40,24 @@ def test_no_local_machine_paths_in_repo():
 
 def test_secrets_and_local_files_are_git_ignored():
     ignored = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
-    for entry in (".env", ".venv/", ".cache/", ".claude/settings.local.json", "data/tickets.jsonl"):
+    for entry in (".env", ".venv/", ".cache/", "data/tickets.jsonl"):
         assert entry in ignored
+
+
+def git_ignores(path: str) -> bool:
+    result = subprocess.run(
+        ["git", "check-ignore", "--quiet", "--no-index", path], cwd=ROOT, capture_output=True
+    )
+    return result.returncode == 0
+
+
+@pytest.mark.skipif(not (ROOT / ".git").exists(), reason="needs a git checkout (not available in the Docker image)")
+def test_claude_code_local_files_are_ignored_but_shared_settings_are_not():
+    # Personal/runtime files Claude Code writes into the project must never be committed...
+    for path in (".claude/settings.local.json", ".claude/scheduled_tasks.lock", ".claude/some-future-cache.json"):
+        assert git_ignores(path), f"{path} should be git-ignored"
+    # ...while team-shared Claude Code config stays committable.
+    assert not git_ignores(".claude/settings.json")
 
 
 def env_example() -> dict[str, str]:
