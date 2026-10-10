@@ -8,7 +8,7 @@ What LangSmith gives you here:
   * evaluation: run an app over a dataset, score it with evaluators (here an LLM-as-judge plus a
     code check), and compare experiments side by side in the UI
 
-This script compares the simple RAG chain from stage 2 against the LangGraph agent from stage 3
+This script compares the simple RAG chain from lesson 1.5 against the LangGraph agent from lesson 3.15
 on the same questions.
 
 Without a LangSmith key it still runs the same evaluation locally and prints the scores.

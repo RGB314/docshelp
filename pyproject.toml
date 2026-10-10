@@ -12,6 +12,7 @@ dependencies = [
     "langchain-mcp-adapters>=0.3.2",
     "langchain-text-splitters>=1.1.2",
     "langgraph>=1.2.12",
+    "langgraph-checkpoint-sqlite>=3.1.1",
     "langgraph-cli[inmem]>=0.4.32",
     "langgraph-sdk>=0.4.5",
     "langsmith>=0.14.1",
@@ -57,7 +58,6 @@ test = { cmd = "pytest -m \"not e2e\"", help = "Unit and integration tests: offl
 e2e = { cmd = "pytest -m e2e", help = "End-to-end tests: stages as processes + real LangGraph Server (no keys; real-model runs need DOCSHELP_E2E_MODEL + Ollama)" }
 lessons = { script = "docshelp.tasks:lessons_main", help = "List every lesson in curriculum order" }
 lesson = { script = "docshelp.tasks:lesson_main", help = "Run one lesson: uv run poe lesson 1.6 (extra args are passed on)" }
-stage3 = { cmd = "python stages/03_langgraph_agent.py", help = "LangGraph agent (add --auto-approve to skip the prompt)" }
 stage4 = { cmd = "python stages/04_langsmith_eval.py", help = "LangSmith datasets and evaluation" }
 stage5 = { cmd = "python stages/05_langgraph_server.py", help = "LangGraph SDK client (start `poe server` first)" }
 server = { cmd = "langgraph dev", help = "LangGraph Server + Studio on http://127.0.0.1:2024" }

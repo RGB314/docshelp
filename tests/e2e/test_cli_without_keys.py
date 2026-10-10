@@ -9,7 +9,6 @@ from .helpers import PROVIDER_KEYS, base_env, free_port, run_lesson, run_stage
 pytestmark = pytest.mark.e2e
 
 STAGES_NEEDING_A_MODEL = [
-    "03_langgraph_agent.py",
     "04_langsmith_eval.py",
 ]
 LESSONS = [code for code, _ in find_lessons()]
@@ -61,9 +60,9 @@ def test_vision_lesson_names_the_vision_model_to_pull():
     assert "ollama pull" in result.stderr
 
 
-def test_stage3_with_ollama_not_running_explains_what_to_do():
+def test_graph_capstone_with_ollama_not_running_explains_what_to_do():
     env = base_env(DOCSHELP_PROVIDER="ollama", OLLAMA_BASE_URL=f"http://127.0.0.1:{free_port()}")
-    result = run_stage("03_langgraph_agent.py", env)
+    result = run_lesson("3.15", env)
 
     assert result.returncode == 1
     assert "Can't reach Ollama" in result.stderr

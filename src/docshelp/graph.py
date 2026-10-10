@@ -31,6 +31,13 @@ What LangGraph adds over a plain LangChain chain:
   * shared, typed state that every node reads and updates
   * persistence: with a checkpointer, every step is saved per `thread_id`, which gives
     multi-turn memory, pause/resume (human-in-the-loop) and time travel for free
+
+How it handles errors (the four kinds from "Thinking in LangGraph"):
+  * transient (a flaky vector store): `retrieve` has a `RetryPolicy`, so LangGraph retries it
+  * recoverable by the LLM (irrelevant documents): stored in state (`docs_relevant`) and looped back
+    through `rewrite`, at most `MAX_REWRITES` times
+  * fixable by a human (should we open a ticket?): `interrupt()` in `human_review`
+  * unexpected: left to raise, so the bug is visible instead of hidden
 """
 
 from __future__ import annotations
@@ -41,7 +48,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.retrievers import BaseRetriever
 from langgraph.graph import END, START, MessagesState, StateGraph
-from langgraph.types import Checkpointer, Command, interrupt
+from langgraph.types import Checkpointer, Command, RetryPolicy, interrupt
 from pydantic import BaseModel, Field
 
 from docshelp import tools
@@ -234,8 +241,10 @@ def build_graph(
         return "rewrite"
 
     builder = StateGraph(State)
-    for node in (classify, retrieve, grade, rewrite, generate, small_talk, draft_ticket, human_review, open_ticket):
+    for node in (classify, grade, rewrite, generate, small_talk, draft_ticket, human_review, open_ticket):
         builder.add_node(node)
+    # Retrieval talks to a store that can fail briefly: retry it (with backoff) before giving up.
+    builder.add_node(retrieve, retry_policy=RetryPolicy(max_attempts=3))
 
     builder.add_edge(START, "classify")
     builder.add_conditional_edges("classify", route_intent, ["retrieve", "draft_ticket", "small_talk"])

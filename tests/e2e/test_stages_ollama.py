@@ -53,10 +53,9 @@ def test_lesson_runs_to_completion(ollama_env, code):
 @pytest.mark.parametrize(
     "script, args, expected",
     [
-        ("03_langgraph_agent.py", ("--auto-approve",), "snapshots for this thread"),
         ("04_langsmith_eval.py", (), "langgraph-agent:"),
     ],
-    ids=["stage3", "stage4"],
+    ids=["stage4"],
 )
 def test_stage_runs_to_completion(ollama_env, script, args, expected):
     result = run_stage(script, ollama_env, *args, timeout=1500)

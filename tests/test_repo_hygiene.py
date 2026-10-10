@@ -40,7 +40,8 @@ def test_no_local_machine_paths_in_repo():
 
 def test_secrets_and_local_files_are_git_ignored():
     ignored = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
-    for entry in (".env", ".venv/", ".cache/", "data/tickets.jsonl", "data/outbox.jsonl", "data/audit.jsonl"):
+    for entry in (".env", ".venv/", ".cache/", "data/tickets.jsonl", "data/outbox.jsonl", "data/audit.jsonl",
+                  "data/checkpoints.sqlite*"):
         assert entry in ignored
 
 
@@ -113,7 +114,10 @@ APP_CODE = [
     *sorted((ROOT / "stages").glob("*.py")),
     *(
         ROOT / "src" / "docshelp" / name
-        for name in ("graph.py", "agents.py", "team.py", "middleware.py", "email_assistant.py", "mcp_server.py")
+        for name in (
+            "graph.py", "agents.py", "team.py", "middleware.py", "email_assistant.py", "mcp_server.py",
+            "react.py", "chatbot.py", "server.py",
+        )
     ),
 ]
 

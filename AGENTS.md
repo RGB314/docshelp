@@ -27,7 +27,7 @@ Every command works the same in PowerShell, cmd, Git Bash, macOS and Linux. Don'
 | Real-model E2E (no keys) | `DOCSHELP_E2E_MODEL=qwen2.5:0.5b uv run poe e2e` with Ollama running and the model pulled |
 | Provider setup check | `uv run poe doctor` |
 | List / run lessons | `uv run poe lessons`, `uv run poe lesson 1.6` (extra args are passed to the lesson) |
-| Run a legacy stage | `uv run poe stage3` … `stage5` (`stage5` needs `uv run poe server`) |
+| Run a legacy stage | `uv run poe stage4`, `stage5` (`stage5` needs `uv run poe server`) |
 | Docker equivalents | `docker compose build`, then `docker compose run --rm app poe <task>` |
 
 Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both must pass.
@@ -44,9 +44,10 @@ Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both mu
 - `src/docshelp/customers.py`: the `Customer` runtime context and a stand-in accounts database.
 - `src/docshelp/{mcp_server,team,middleware,email_assistant}.py`: Part 2's MCP server, supervisor team,
   `AuditLog` middleware and email assistant.
+- `src/docshelp/{react,chatbot}.py`: Part 3's hand-built ReAct agent and summarizing chatbot graphs.
 - `src/docshelp/{ingest,tools,console,tasks,server}.py`: RAG pipeline, tools, UTF-8 output, `poe` helpers
   (including the lesson runner), and the LangGraph Server entry point.
-- `lessons/p<part>_<topic>/<NN>_<topic>.py`: the curriculum. `stages/`: stages 3–5, until their parts replace them.
+- `lessons/p<part>_<topic>/<NN>_<topic>.py`: the curriculum. `stages/`: stages 4–5, until their parts replace them.
 - `tests/`: unit tests (one `test_part<N>_*.py` per part). `tests/e2e/`: process-level and server tests.
 
 ## Rules

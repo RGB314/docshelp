@@ -10,9 +10,9 @@ to be built, in what order, and how to pick the work up in a new session.
 | Part | Topic | Status |
 |---|---|---|
 | 1 | LangChain essentials | ✅ Merged (PR #4) |
-| 2 | Production-ready agents with LangChain | ✅ Shipped (PR for branch `feat/curriculum-part2-production-agents`) |
-| 3 | LangGraph core (absorbs `stages/03`) | ⏭️ Next |
-| 4 | LangGraph at scale + long-term memory | Planned |
+| 2 | Production-ready agents with LangChain | ✅ Shipped (PR #6) |
+| 3 | LangGraph core (absorbs `stages/03`) | ✅ Shipped (branch `feat/curriculum-part3-langgraph`) |
+| 4 | LangGraph at scale + long-term memory | ⏭️ Next |
 | 5 | LangSmith observability and evaluation (absorbs `stages/04`) | Planned |
 | 6 | Agent projects: ambient inbox and deep research | Planned |
 | 7 | Deep Agents (plus dcode, Fleet and MDA twins) | Planned |
@@ -96,21 +96,29 @@ Part 3 must show the LangGraph layer *under* these features, not repeat them:
 - `interrupt()` in a node rather than the HITL middleware
 
 ### Part 3: LangGraph core (LangGraph Essentials; Intro to LangGraph M1–M3)
-Replaces `stages/03`. `graph.py` stays the capstone. New dependency: `langgraph-checkpoint-sqlite`.
-1. Nodes and edges.
-2. Conditional edges and routers.
-3. A ReAct agent built by hand.
-4. Studio (`langgraph dev`, free account).
-5. State schemas: TypedDict, dataclass and Pydantic.
-6. Reducers.
-7. Multiple schemas: input, output and private.
-8. Trimming and filtering messages.
-9. A summarizing chatbot.
-10. `SqliteSaver`, so conversations survive restarts.
-11. Stream modes: values, updates, messages and custom.
-12. Breakpoints, plus editing state and human feedback.
-13. Dynamic interrupts.
+Shipped as built. Replaced `stages/03`. Dependency added: `langgraph-checkpoint-sqlite`.
+1. State, nodes and edges.
+2. Conditional edges vs `Command(goto=...)`.
+3. A ReAct agent by hand (`react.py`).
+4. Studio: `langgraph.json` now serves `docshelp` and `react_agent`.
+5. State schemas. Pydantic validates input only.
+6. Reducers: `InvalidUpdateError`, a custom reducer, and replacing or removing with `add_messages`.
+7. Input, output and private schemas.
+8. Trimming and filtering.
+9. A summarizing chatbot (`chatbot.py`).
+10. `SqliteSaver` across "restarts".
+11. Stream modes and `astream_events`.
+12. Breakpoints, `update_state` and `as_node`.
+13. `interrupt()` with a validation loop and conditional approval.
 14. Time travel: replay and fork.
+15. Capstone: `graph.py`, now with a `RetryPolicy` on `retrieve` and the four error kinds from "Thinking in LangGraph".
+
+Reuse in later parts:
+- `build_react_agent`
+- `build_summarizing_chatbot`
+- `build_graph`
+
+Parallel branches appeared only briefly, in 3.6 (reducers). Part 4 teaches them properly, with fan-out/fan-in and `Send`.
 
 ### Part 4: LangGraph at scale + long-term memory (Intro to LangGraph M4–M5)
 1. Parallel fan-out and fan-in [docs, changelog and status page].
