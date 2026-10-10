@@ -10,8 +10,8 @@ to be built, in what order, and how to pick the work up in a new session.
 | Part | Topic | Status |
 |---|---|---|
 | 1 | LangChain essentials | ✅ Merged (PR #4) |
-| 2 | Production-ready agents with LangChain | ⏭️ Next |
-| 3 | LangGraph core (absorbs `stages/03`) | Planned |
+| 2 | Production-ready agents with LangChain | ✅ Shipped (PR for branch `feat/curriculum-part2-production-agents`) |
+| 3 | LangGraph core (absorbs `stages/03`) | ⏭️ Next |
 | 4 | LangGraph at scale + long-term memory | Planned |
 | 5 | LangSmith observability and evaluation (absorbs `stages/04`) | Planned |
 | 6 | Agent projects: ambient inbox and deep research | Planned |
@@ -71,18 +71,29 @@ Part 7 (`interrupt_on`). MCP goes from Part 2 to Part 6 to Part 7. Memory goes f
 to Part 7.
 
 ### Part 2: Production-ready agents (Intro to LangChain M2–M3)
-New dependencies: `langchain-mcp-adapters`, `mcp`.
-1. MCP:
-   - A local FastMCP server, `src/docshelp/mcp_server.py`, exposes ticket and status-page tools.
-   - The agent consumes them through `langchain-mcp-adapters` over stdio, with no network.
-2. Runtime context and custom agent state [user_id and plan via `context_schema` / `ToolRuntime`].
-3. Multi-agent: a supervisor that calls subagents as tools [billing agent plus docs agent].
-4. Middleware: what it is, plus a custom `before_model`/`after_model` hook that logs to a file.
-5. Long conversations: `SummarizationMiddleware`, plus trimming.
-6. HITL: `HumanInTheLoopMiddleware` on `open_ticket`.
-7. Dynamic agents: pick the model by difficulty, and the tools by plan.
+Shipped as built. Dependencies added: `langchain-mcp-adapters`, `mcp`.
+1. MCP: a stdio server, `src/docshelp/mcp_server.py`, provides tools, a resource and a prompt.
+2. Context and custom state: `ToolRuntime`, `Command(update=...)`.
+3. Multi-agent: a supervisor delegates to docs, billing and MCP status specialists (`team.py`).
+4. Middleware: all six hooks in `AuditLog` (`middleware.py`), plus a `before_agent` guard with `jump_to`.
+5. Prebuilt middleware: tool and model retry, call limits and model fallback.
+6. Long conversations: summarization, trimming with `RemoveMessage`, and `ContextEditingMiddleware`.
+7. HITL: approve, edit or reject on `open_ticket`.
+8. Dynamic agents: the model is picked by difficulty and the tools by plan.
+9. Capstone: the email assistant (`email_assistant.py`) with a verification gate, dynamic tools from state,
+   HITL on `send_reply`, summarization, a call limit and the audit log.
 
-Capstone: a support-email assistant built from `create_agent` plus middleware. Agent Chat UI is covered in Part 8.
+Agent Chat UI is covered in Part 8.
+
+Shared code that later parts should reuse, rather than re-teach:
+- `customers.py`: the `Customer` context and the `ACCOUNTS` data
+- `tools.py`: `my_account`, `open_ticket`, `send_reply`
+- `middleware.py`: `AuditLog`
+- `FakeChatModel`, which now also takes exceptions as replies and records the tools offered to each call in `.bound`
+
+Part 3 must show the LangGraph layer *under* these features, not repeat them:
+- message trimming and summarization in graph nodes
+- `interrupt()` in a node rather than the HITL middleware
 
 ### Part 3: LangGraph core (LangGraph Essentials; Intro to LangGraph M1–M3)
 Replaces `stages/03`. `graph.py` stays the capstone. New dependency: `langgraph-checkpoint-sqlite`.

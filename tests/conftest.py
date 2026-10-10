@@ -12,6 +12,8 @@ from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage
 from langchain_core.messages.tool import tool_call_chunk
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 from langchain_core.runnables import RunnableLambda
+from langchain_core.tools import BaseTool
+from langchain_core.utils.function_calling import convert_to_openai_tool
 from langchain_core.vectorstores import InMemoryVectorStore
 from pydantic import Field
 
@@ -45,13 +47,15 @@ class FakeChatModel(BaseChatModel):
 
     Unlike `ScriptedLLM` it is a full `BaseChatModel`, so it works inside LCEL chains, `create_agent`
     and tool-calling loops, and it streams word by word. `replies` are returned in order (a str, or an
-    `AIMessage` with `tool_calls`); `structured` works like `ScriptedLLM`'s. Every list of messages the
-    model receives is recorded in `seen`, so tests can check prompts.
+    `AIMessage` with `tool_calls`, or an exception to raise, for testing retries and fallbacks);
+    `structured` works like `ScriptedLLM`'s. Every list of messages the model receives is recorded in
+    `seen`, and the tool names offered to each call in `bound`, so tests can check prompts and tools.
     """
 
     replies: list[Any] = Field(default_factory=list)
     structured: dict[Any, list] = Field(default_factory=dict)
     seen: list[list[BaseMessage]] = Field(default_factory=list)
+    bound: list[list[str]] = Field(default_factory=list)
 
     @property
     def _llm_type(self) -> str:
@@ -60,6 +64,8 @@ class FakeChatModel(BaseChatModel):
     def _next(self, messages: list[BaseMessage]) -> AIMessage:
         self.seen.append(list(messages))
         reply = self.replies.pop(0)
+        if isinstance(reply, Exception):
+            raise reply
         reply = AIMessage(reply) if isinstance(reply, str) else reply
         return reply.model_copy(update={"usage_metadata": reply.usage_metadata or USAGE})
 
@@ -83,6 +89,8 @@ class FakeChatModel(BaseChatModel):
             yield ChatGenerationChunk(message=chunk)
 
     def bind_tools(self, tools, **kwargs):
+        names = [t.name if isinstance(t, BaseTool) else convert_to_openai_tool(t)["function"]["name"] for t in tools]
+        self.bound.append(names)
         return self
 
     def with_structured_output(self, schema, **kwargs):

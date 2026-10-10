@@ -6,9 +6,6 @@ parts extend this same agent: middleware (Part 2), evaluation (Part 5) and deplo
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Literal
-
 from langchain.agents import create_agent
 from langchain.agents.middleware import ModelRequest, dynamic_prompt
 from langchain_core.language_models import BaseChatModel
@@ -16,17 +13,10 @@ from langchain_core.retrievers import BaseRetriever
 from langgraph.types import Checkpointer
 from pydantic import BaseModel, Field
 
+from docshelp.customers import Customer, Plan
 from docshelp.tools import make_search_docs, quote_price
 
-Plan = Literal["free", "team", "enterprise"]
-
-
-@dataclass
-class Customer:
-    """Runtime context: facts about the caller that the app knows (not the model). Passed per run."""
-
-    name: str = "there"
-    plan: Plan = "free"
+__all__ = ["Customer", "Plan", "SupportAnswer", "build_support_agent", "plan_aware_prompt", "support_prompt"]
 
 
 class SupportAnswer(BaseModel):
