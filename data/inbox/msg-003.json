@@ -1,0 +1,14 @@
+{
+  "id": "msg-003",
+  "from": "grace@globex.example",
+  "subject": "URGENT: SCIM locking people out",
+  "body": "Since this morning SCIM provisioning from Entra ID creates duplicate users and about 40 of our people are locked out. We need this fixed today. Grace, Globex IT",
+  "eval": {
+    "triage": "respond",
+    "tools": [
+      "open_ticket",
+      "send_reply"
+    ],
+    "criteria": "Opens a high or urgent priority ticket, apologises, and tells Grace an engineer will follow up."
+  }
+}

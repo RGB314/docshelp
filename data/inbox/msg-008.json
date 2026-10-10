@@ -1,0 +1,11 @@
+{
+  "id": "msg-008",
+  "from": "privacy@lawfirm.example",
+  "subject": "GDPR erasure request for a Nimbus user",
+  "body": "On behalf of our client we request erasure of all personal data held about j.doe@example.com under Article 17 GDPR. Please confirm within 30 days.",
+  "eval": {
+    "triage": "notify",
+    "tools": [],
+    "criteria": ""
+  }
+}

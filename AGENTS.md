@@ -49,6 +49,7 @@ Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both mu
 - `src/docshelp/{sources,research,memory}.py`: Part 4's extra knowledge sources, research assistant and long-term memory.
 - `src/docshelp/{observability,evals,prompts}.py`: Part 5's tracing (LangSmith or a local twin), evaluation helpers and
   prompt hub. Lessons that trace or evaluate must work without a LangSmith key.
+- `src/docshelp/{ambient,deep_research,docs_mcp_server}.py`: Part 6's inbox agent, deep-research system and docs MCP server.
 - `src/docshelp/{ingest,tools,console,tasks,server}.py`: RAG pipeline, tools, UTF-8 output, `poe` helpers
   (including the lesson runner), and the LangGraph Server entry point.
 - `lessons/p<part>_<topic>/<NN>_<topic>.py`: the curriculum. `stages/`: stage 5, until Part 8 replaces it.

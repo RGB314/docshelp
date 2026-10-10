@@ -1,0 +1,11 @@
+{
+  "id": "msg-007",
+  "from": "noreply@acme.example",
+  "subject": "Automatic reply: out of office",
+  "body": "I'm out of the office until Monday with limited access to email.",
+  "eval": {
+    "triage": "ignore",
+    "tools": [],
+    "criteria": ""
+  }
+}

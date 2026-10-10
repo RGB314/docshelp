@@ -22,7 +22,7 @@ Run `uv run poe lessons` to list the lessons. Run one with `uv run poe lesson <n
 | 3 | LangGraph core: state, nodes, edges, reducers, schemas, message management, persistence, streaming, interrupts, time travel | 1–2 | ✅ shipped |
 | 4 | LangGraph at scale and long-term memory: parallelism, subgraphs, map-reduce, the Store, memory schemas | 3 | ✅ shipped |
 | 5 | LangSmith: tracing, datasets, evaluators, experiments, prompt engineering, feedback, annotation | 1–4 | ✅ shipped |
-| 6 | Agent projects: an ambient support-inbox agent and a deep-research agent | 1–5 | planned |
+| 6 | Agent projects: an ambient support-inbox agent and a deep-research agent | 1–5 | ✅ shipped |
 | 7 | Deep Agents: planning, filesystems, sandboxes, skills, memory, subagents, agents-from-config | 1–6 | planned |
 | 8 | Deployment: LangGraph Server, SDK, assistants, double texting, custom routes, auth, Store, Chat UI | 3–7 | planned |
 | 9 | Production: cost, quality, security monitoring, online evals, automations, and the improvement loop | 5, 8 | planned |
@@ -164,15 +164,21 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 | Academy lesson | Covered by |
 |---|---|
 | M1 LangGraph 101 | `lessons/p3_langgraph/01_state_nodes_edges.py` … `lessons/p3_langgraph/15_capstone_support_graph.py` (all of Part 3) |
-| M2 Building Agents, M3 Agent Evaluations, M4 Human-in-the-Loop, M5 Memory | Part 6 (planned) |
+| M2 Building Agents | `lessons/p6_agent_projects/01_ambient_inbox_agent.py` (agent: `src/docshelp/ambient.py`) |
+| M3 Agent Evaluations | `lessons/p6_agent_projects/02_ambient_evaluations.py` |
+| M4 Human-in-the-Loop | `lessons/p6_agent_projects/03_ambient_human_in_the_loop.py` |
+| M5 Memory | `lessons/p6_agent_projects/04_ambient_memory.py` |
 | M6 Deployment | Part 8 (planned) |
 
 ### Project: Deep Research with LangGraph
 
 | Academy lesson | Covered by |
 |---|---|
-| M2 Scoping, M3 Research Agent, M4 Research Agent with MCP | Part 6 (planned) |
-| M5 Research Supervisor, M6 Multi-Agent Research System | Part 6 (planned) |
+| M2 Scoping | `lessons/p6_agent_projects/05_research_scoping.py` (system: `src/docshelp/deep_research.py`) |
+| M3 Research Agent | `lessons/p6_agent_projects/06_research_agent.py` |
+| M4 Research Agent with MCP | `lessons/p6_agent_projects/07_research_agent_mcp.py` (server: `src/docshelp/docs_mcp_server.py`) |
+| M5 Research Supervisor | `lessons/p6_agent_projects/08_research_supervisor.py` |
+| M6 Multi-Agent Research System | `lessons/p6_agent_projects/09_capstone_deep_research.py` |
 
 ### Introduction to Deep Agents
 
@@ -544,4 +550,54 @@ its commit. The app pulls `"docshelp-rag:prod"`, so moving the tag back to the o
 The rating is stored as feedback on that run's id (5.11). A rule queues the run for review (5.12), the reviewer
 writes the correct answer, and it becomes a dataset example. The next experiment (5.6) or `poe evals` (5.9) then
 tests that exact case.
+</details>
+
+### Part 6 self-check
+
+<details>
+<summary>1. What makes the inbox agent "ambient" rather than a chatbot, and why triage before responding?</summary>
+
+It's triggered by events (new emails), runs in the background, and involves a person only when it must. Triage is
+one cheap structured call. It keeps the expensive tool-using response agent away from newsletters and
+auto-replies, and sends alerts that a person must handle to "notify".
+</details>
+
+<details>
+<summary>2. In the Agent Inbox protocol, what happens to each of the four responses to a drafted reply?</summary>
+
+`accept` sends it as drafted. `edit` sends the human's version, and with memory updates the response preferences.
+`respond` sends nothing: the feedback goes back to the model as a tool result and it drafts again. `ignore` ends
+the run, and with memory teaches triage that the email didn't need a reply.
+</details>
+
+<details>
+<summary>3. Why evaluate triage separately from responses?</summary>
+
+They fail differently and need different measures. Triage is a classification, scored on every email for accuracy
+and the direction of its errors. Responses only exist for "respond" emails, and need tool checks plus an LLM judge
+against each email's own success criteria. A single end-to-end score would hide which part broke.
+</details>
+
+<details>
+<summary>4. What does the <code>think</code> tool do, given that it returns its input?</summary>
+
+Nothing, as a tool. Making the model write down what it has learned and what's missing before its next call makes
+the loop more deliberate: fewer redundant searches and earlier, better-founded stops. It's cheap structured
+reflection.
+</details>
+
+<details>
+<summary>5. Why do researchers return <em>compressed</em> findings, and why don't they see the conversation?</summary>
+
+The supervisor coordinates several researchers. Raw search results would flood its context, while compressed,
+cited findings fit easily. Each researcher gets only a standalone topic, so its own context stays small and
+focused, and the topics can run in parallel without depending on each other.
+</details>
+
+<details>
+<summary>6. Which limits keep a deep-research run from costing too much, and where are they enforced?</summary>
+
+`max_tool_rounds` per researcher (in `should_continue`), `max_concurrent` researchers per supervisor turn (extra
+`ConductResearch` calls are told to wait), and `max_iterations` supervisor turns (in `supervisor_tools`). The
+scoping step also stops after a few clarifying questions.
 </details>

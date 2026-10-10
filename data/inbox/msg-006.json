@@ -1,0 +1,14 @@
+{
+  "id": "msg-006",
+  "from": "ada@acme.example",
+  "subject": "Quote for 15 seats",
+  "body": "We're growing! What would the Team plan cost for 15 members, billed annually? Ada",
+  "eval": {
+    "triage": "respond",
+    "tools": [
+      "quote_price",
+      "send_reply"
+    ],
+    "criteria": "Quotes the exact annual price from the pricing tool ($1,152.00 per year)."
+  }
+}

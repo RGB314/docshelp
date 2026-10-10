@@ -118,7 +118,7 @@ APP_CODE = [
         for name in (
             "graph.py", "agents.py", "team.py", "middleware.py", "email_assistant.py", "mcp_server.py",
             "react.py", "chatbot.py", "server.py", "research.py", "memory.py", "sources.py",
-            "observability.py", "evals.py", "prompts.py",
+            "observability.py", "evals.py", "prompts.py", "ambient.py", "deep_research.py", "docs_mcp_server.py",
         )
     ),
 ]

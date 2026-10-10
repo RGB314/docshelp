@@ -20,6 +20,7 @@ data/traces.jsonl
 data/feedback.jsonl
 data/annotation_queue.jsonl
 data/prompts/
+data/reports/
 graph.mmd
 
 # Personal editor / assistant settings.

@@ -10,12 +10,12 @@ to be built, in what order, and how to pick the work up in a new session.
 | Part | Topic | Status |
 |---|---|---|
 | 1 | LangChain essentials | ✅ Merged (PR #4) |
-| 2 | Production-ready agents with LangChain | ✅ Shipped (PR #6) |
-| 3 | LangGraph core (absorbs `stages/03`) | ✅ Shipped (PR #7) |
-| 4 | LangGraph at scale + long-term memory | ✅ Shipped (PR #8) |
-| 5 | LangSmith observability and evaluation (absorbs `stages/04`) | ✅ Shipped (branch `feat/curriculum-part5-langsmith`) |
-| 6 | Agent projects: ambient inbox and deep research | ⏭️ Next |
-| 7 | Deep Agents (plus dcode, Fleet and MDA twins) | Planned |
+| 2 | Production-ready agents with LangChain | ✅ Merged (PR #6) |
+| 3 | LangGraph core (absorbs `stages/03`) | ✅ Merged (PR #7) |
+| 4 | LangGraph at scale + long-term memory | ✅ Merged (PR #8) |
+| 5 | LangSmith observability and evaluation (absorbs `stages/04`) | ✅ Merged (PR #9) |
+| 6 | Agent projects: ambient inbox and deep research | ✅ Shipped (branch `feat/curriculum-part6-agent-projects`) |
+| 7 | Deep Agents (plus dcode, Fleet and MDA twins) | ⏭️ Next |
 | 8 | Deployment (absorbs `stages/05`) | Planned |
 | 9 | Production monitoring and the improvement loop | Planned |
 
@@ -178,22 +178,28 @@ Online-only code paths aren't exercised by CI because they need a key:
 Verify them manually with a free key.
 
 ### Part 6: Agent projects (Project: Ambient Agents; Project: Deep Research)
-New optional extra: `web = ["ddgs"]`.
-1. Ambient support-inbox agent:
-   - It runs on events from `data/inbox/*.json`, not from a chat.
-   - A triage router decides: respond, notify or ignore.
-   - A response agent drafts the reply.
-   - Agent-Inbox-style interrupts let a human accept, edit, respond or ignore.
-   - Memory learns triage and tone preferences from the human's edits.
-   - A triage-accuracy eval.
-2. Deep research [a competitive and product research report about Nimbus Notes]:
-   - Scoping: clarifying questions, then a brief.
-   - A research agent with a think tool and context compression.
-   - The same agent over MCP.
-   - A supervisor with parallel researchers.
-   - Writing the report.
-   - A report-quality eval.
-   - Web search uses the optional `ddgs` extra and falls back to the local docs offline.
+Shipped as built. Dependency added: an optional `web` extra (`ddgs`) for free web search. New data:
+`data/inbox/*.json` holds 8 support emails, each with an `eval` block for the labels. Reports go to `data/reports/` (git-ignored).
+
+Ambient agent (`ambient.py`, `build_inbox_agent(hitl=, memory=)`):
+1. Triage router, then a hand-built response loop. Its tools are search_docs, search_changelog, quote_price, open_ticket, send_reply and done.
+2. Evaluations: triage accuracy, expected tools, an LLM judge on per-email criteria.
+3. Agent Inbox protocol: the `HumanInterrupt` and `HumanResponse` TypedDicts are defined locally, because the
+   `langgraph.prebuilt.interrupt` versions are deprecated. `process_inbox()` plays the role of the UI.
+4. Memory: triage and response preferences in the Store, rewritten from human edits, ignores and responses.
+
+Deep research (`deep_research.py`):
+5. Scoping: `ClarifyWithUser` ends the run with a question, then `ResearchBrief`.
+6. The researcher: `search_sources` and `think`, a tool budget, compression.
+7. The same researcher with tools from `docs_mcp_server.py`.
+8. The supervisor: `ConductResearch`, `ResearchComplete` and `think`, with researchers run through `asyncio.gather`, `max_concurrent` and `max_iterations`.
+9. Capstone: scope, then supervisor, then report. Graded by an LLM judge. Runs with `ainvoke`.
+
+Loop guards protect real small models:
+- `MAX_TOOL_ROUNDS` and `MAX_REVIEWS` in `ambient.py`
+- a cap on clarifying questions
+
+Part 8 deploys the inbox agent with cron and Agent Inbox. Ambient Agents M6 is mapped there.
 
 ### Part 7: Deep Agents (Intro to Deep Agents; dcode Essentials; LangSmith Fleet)
 New dependency: `deepagents>=0.7.21`. Add it to `pyproject.toml` dependencies, then run `uv lock`.
