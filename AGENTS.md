@@ -11,6 +11,9 @@ Each concept is taught once and only built on afterwards, never repeated. Everyt
 (Ollama by default; paid-only LangSmith features get local twins). Clarity for learners matters as much as
 correctness. Keep code small, commented where the concept is non-obvious, and consistent with its part.
 
+**Work in progress:** the curriculum is being built one part per PR. `ROADMAP.md` holds the plan, the current
+status and the steps for resuming in a new session. Read it before starting curriculum work.
+
 ## Commands
 
 Every command works the same in PowerShell, cmd, Git Bash, macOS and Linux. Don't add shell-specific scripts.
