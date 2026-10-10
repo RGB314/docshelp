@@ -19,7 +19,7 @@ Run `uv run poe lessons` to list the lessons. Run one with `uv run poe lesson <n
 |---|---|---|---|
 | 1 | LangChain essentials: models, prompts, structured output, multimodal, RAG, tools, agents, streaming, memory | none | ✅ shipped |
 | 2 | Production-ready agents: MCP, runtime context and state, multi-agent, middleware, HITL, dynamic agents | 1 | ✅ shipped |
-| 3 | LangGraph core: state, nodes, edges, reducers, schemas, message management, persistence, streaming, interrupts, time travel | 1–2 | planned |
+| 3 | LangGraph core: state, nodes, edges, reducers, schemas, message management, persistence, streaming, interrupts, time travel | 1–2 | ✅ shipped |
 | 4 | LangGraph at scale and long-term memory: parallelism, subgraphs, map-reduce, the Store, memory schemas | 3 | planned |
 | 5 | LangSmith: tracing, datasets, evaluators, experiments, prompt engineering, feedback, annotation | 1–4 | planned |
 | 6 | Agent projects: an ambient support-inbox agent and a deep-research agent | 1–5 | planned |
@@ -82,21 +82,30 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 
 | Academy lesson | Covered by |
 |---|---|
-| L1 Nodes, L2 Edges, L3 Conditional Edges | Part 3 (planned) |
-| L4 Memory | Part 3 (planned) |
-| L5 Interrupt, Human in the Loop | Part 3 (planned) |
-| L6 Application (email workflow) | Part 3 (planned) |
+| L1 Nodes, L2 Edges | `lessons/p3_langgraph/01_state_nodes_edges.py` |
+| L3 Conditional Edges | `lessons/p3_langgraph/02_conditional_edges_and_command.py` |
+| L4 Memory | `lessons/p3_langgraph/03_react_agent_by_hand.py`, `lessons/p3_langgraph/10_external_memory.py` |
+| L5 Interrupt, Human in the Loop | `lessons/p3_langgraph/13_dynamic_interrupts.py` |
+| L6 Application (email workflow) | `lessons/p3_langgraph/15_capstone_support_graph.py` (graph: `src/docshelp/graph.py`) |
 
 ### Introduction to LangGraph (Python)
 
 | Academy lesson | Covered by |
 |---|---|
-| M1 L1 Motivation, L2 Simple Graph, L4 Chain, L5 Router, L6 Agent, L7 Agent with Memory | Part 3 (planned) |
-| M1 L3 LangSmith Studio | Part 3 (planned) |
+| M1 L1 Motivation, L2 Simple Graph | `lessons/p3_langgraph/01_state_nodes_edges.py` |
+| M1 L4 Chain, L5 Router, L6 Agent, L7 Agent with Memory | `lessons/p3_langgraph/03_react_agent_by_hand.py` (graph: `src/docshelp/react.py`), router also in `lessons/p3_langgraph/02_conditional_edges_and_command.py` |
+| M1 L3 LangSmith Studio | `lessons/p3_langgraph/04_studio.py` |
 | M1 L8 Intro to Deployment | Part 8 (planned) |
-| M2 L1 State Schema, L2 State Reducers, L3 Multiple Schemas | Part 3 (planned) |
-| M2 L4 Trim and Filter Messages, L5 Summarizing Chatbot, L6 External Memory | Part 3 (planned) |
-| M3 L1 Streaming, L2 Breakpoints, L3 Editing State and Human Feedback, L4 Dynamic Breakpoints, L5 Time Travel | Part 3 (planned) |
+| M2 L1 State Schema | `lessons/p3_langgraph/05_state_schemas.py` |
+| M2 L2 State Reducers | `lessons/p3_langgraph/06_reducers.py` |
+| M2 L3 Multiple Schemas | `lessons/p3_langgraph/07_multiple_schemas.py` |
+| M2 L4 Trim and Filter Messages | `lessons/p3_langgraph/08_trim_and_filter.py` |
+| M2 L5 Chatbot w/ Summarizing Messages | `lessons/p3_langgraph/09_summarizing_chatbot.py` (graph: `src/docshelp/chatbot.py`) |
+| M2 L6 Chatbot w/ External Memory | `lessons/p3_langgraph/10_external_memory.py` |
+| M3 L1 Streaming | `lessons/p3_langgraph/11_streaming.py` |
+| M3 L2 Breakpoints, L3 Editing State and Human Feedback | `lessons/p3_langgraph/12_breakpoints_and_editing_state.py` |
+| M3 L4 Dynamic Breakpoints | `lessons/p3_langgraph/13_dynamic_interrupts.py` |
+| M3 L5 Time Travel | `lessons/p3_langgraph/14_time_travel.py` |
 | M4 L1 Parallelization, L2 Sub-graphs, L3 Map-reduce, L4 Research Assistant | Part 4 (planned) |
 | M5 L1 Short vs Long-Term Memory, L2 LangGraph Store | Part 4 (planned) |
 | M5 L3 Memory Schema + Profile, L4 Memory Schema + Collection, L5 Agent with Long-Term Memory | Part 4 (planned) |
@@ -128,7 +137,8 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 
 | Academy lesson | Covered by |
 |---|---|
-| M1 What is Tracing?, Debugging with Studio, Capstone | Part 5 (planned) |
+| M1 Debugging with Studio | `lessons/p3_langgraph/04_studio.py` |
+| M1 What is Tracing?, Capstone | Part 5 (planned) |
 | M2 Datasets and Offline Evals, Experiments, Capstone | Part 5 (planned) |
 | M3 Deployments | Part 8 (planned) |
 | M4 Online Evaluators and Automations, Annotation Queues, Insights, Dashboards, Capstone | Part 9 (planned) |
@@ -138,7 +148,7 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 
 | Academy lesson | Covered by |
 |---|---|
-| M1 LangGraph 101 | Part 3 (planned) |
+| M1 LangGraph 101 | `lessons/p3_langgraph/01_state_nodes_edges.py` … `lessons/p3_langgraph/15_capstone_support_graph.py` (all of Part 3) |
 | M2 Building Agents, M3 Agent Evaluations, M4 Human-in-the-Loop, M5 Memory | Part 6 (planned) |
 | M6 Deployment | Part 8 (planned) |
 
@@ -329,4 +339,76 @@ the fallback to take over.
 Defence in depth. Hiding the tool keeps the model from trying, and saves tokens. The check inside the tool
 still holds if a misconfigured middleware or a direct call ever reaches it. It also reads the account from
 verified state, never from the model.
+</details>
+
+### Part 3 self-check
+
+<details>
+<summary>1. Two parallel nodes both return <code>{"tags": [...]}</code> and the run fails. Why, and what are the two fixes?</summary>
+
+With no reducer, a key is overwritten, and two writes in one step are ambiguous, so LangGraph raises
+`InvalidUpdateError`. You can give the key a reducer (`Annotated[list[str], operator.add]` or a custom merge
+function), or have the nodes write to different keys.
+</details>
+
+<details>
+<summary>2. You declared the state as a Pydantic model with <code>priority: Literal["low", "high"]</code>. A node returns <code>{"priority": "critical"}</code>. What happens?</summary>
+
+Nothing stops it. Pydantic state validates the graph's *input*, not node outputs. Validate model output
+where it enters: use structured output, or check the value inside the node (lesson 3.5).
+</details>
+
+<details>
+<summary>3. When would you route with <code>add_conditional_edges</code>, and when with <code>Command(goto=...)</code>?</summary>
+
+Use conditional edges when routing is a separate, pure decision on the state: it's easy to test and visible in
+the graph. Use `Command` when a node's decision and its state update belong together, as in handoffs, a review
+step that also edits the ticket, or agents passing control to each other.
+</details>
+
+<details>
+<summary>4. Which of filtering, <code>RemoveMessage</code> and <code>trim_messages</code> actually shrinks the saved history?</summary>
+
+Only `RemoveMessage`, which the `add_messages` reducer applies to state. Filtering a slice and
+`trim_messages` change only what one model call sees. The summarizing chatbot (3.9) combines a summary
+with `RemoveMessage`.
+</details>
+
+<details>
+<summary>5. A node calls <code>interrupt()</code> twice. After the second resume, how many times has the node's code run?</summary>
+
+Three times. Each resume re-runs the node from the top, and earlier `interrupt()` calls return their saved
+answers in order. So put side effects (sending emails, writing tickets) after the interrupts, or in a later node.
+</details>
+
+<details>
+<summary>6. <code>interrupt_before=["tools"]</code> vs <code>interrupt()</code> inside a node: what's the difference?</summary>
+
+A static breakpoint is set at compile time and stops before that node on every run. It's handy for
+debugging and for approving every tool call. `interrupt()` stops only when the node's logic decides to,
+for example a refund over $100, and it carries a payload that the caller answers with `Command(resume=...)`.
+</details>
+
+<details>
+<summary>7. How do you correct a tool call's arguments while the graph is paused before <code>tools</code>?</summary>
+
+Call `update_state(config, {"messages": [AIMessage(..., tool_calls=fixed, id=original.id)]})`. Because the id
+is the same, `add_messages` replaces the message. Then `invoke(None, config)` resumes. To skip the tool entirely,
+write the `ToolMessage` yourself with `as_node="tools"`.
+</details>
+
+<details>
+<summary>8. Replay vs fork in time travel?</summary>
+
+Replay is `invoke(None, past_snapshot.config)`: it re-runs everything after that checkpoint, unchanged. Fork is
+`update_state(past_snapshot.config, change)`: it creates a new branch with modified state, which you then run. The
+original history stays as it was in both cases.
+</details>
+
+<details>
+<summary>9. Why does <code>build_graph</code> put a <code>RetryPolicy</code> on <code>retrieve</code> but handle irrelevant documents with a rewrite loop instead?</summary>
+
+The two errors are different kinds. A flaky store is transient, so retrying the same call is the fix. Irrelevant
+documents are something the LLM can recover from: the result goes into state (`docs_relevant`) and the graph
+loops through `rewrite` with a better query. Retrying the identical query would return the same documents.
 </details>

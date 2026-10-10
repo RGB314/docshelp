@@ -53,7 +53,7 @@ def test_poethepoet_is_a_dev_dependency():
 
 def test_poe_tasks_cover_the_whole_workflow():
     poe_tasks = PYPROJECT["tool"]["poe"]["tasks"]
-    for name in ("init-env", "doctor", "test", "server", "lessons", "lesson", "stage3", "stage4", "stage5"):
+    for name in ("init-env", "doctor", "test", "server", "lessons", "lesson", "stage4", "stage5"):
         assert name in poe_tasks, f"missing poe task {name!r}"
 
 
@@ -97,7 +97,7 @@ def test_unit_and_e2e_suites_are_separate_tasks():
     assert any(m.startswith("e2e:") for m in markers)
 
 
-@pytest.mark.parametrize("n", range(3, 6))  # stages 1-2 became Part 1 lessons; the rest follow part by part
+@pytest.mark.parametrize("n", range(4, 6))  # stages 1-3 became Parts 1 and 3; the rest follow part by part
 def test_stage_tasks_point_at_existing_scripts(n):
     task = PYPROJECT["tool"]["poe"]["tasks"][f"stage{n}"]
     cmd = task["cmd"] if isinstance(task, dict) else task

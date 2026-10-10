@@ -15,7 +15,7 @@ with self-check questions.
 |---|---|---|---|
 | 1 | **LangChain essentials:** models and messages, prompts and LCEL, structured output, multimodal, RAG, tools and `create_agent`, streaming, short-term memory, dynamic prompts | `uv run poe lesson 1.1` … `1.10` | ✅ |
 | 2 | **Production-ready agents:** MCP, runtime context and state, multi-agent, middleware, long conversations, human-in-the-loop, dynamic agents | `uv run poe lesson 2.1` … `2.9` | ✅ |
-| 3 | **LangGraph core:** state, reducers, schemas, message management, persistence, streaming, interrupts, time travel | `uv run poe stage3` for now | |
+| 3 | **LangGraph core:** state, reducers, schemas, message management, persistence, streaming, interrupts, time travel, Studio | `uv run poe lesson 3.1` … `3.15` | ✅ |
 | 4 | **LangGraph at scale + long-term memory:** parallelism, subgraphs, map-reduce, the Store | (planned) | |
 | 5 | **LangSmith:** tracing, datasets, evaluators, experiments, prompts, feedback, annotation | `uv run poe stage4` for now | |
 | 6 | **Agent projects:** an ambient support-inbox agent and a deep-research agent | (planned) | |
@@ -23,7 +23,7 @@ with self-check questions.
 | 8 | **Deployment:** LangGraph Server, SDK, assistants, double texting, custom routes, auth, Chat UI | `uv run poe stage5` for now | |
 | 9 | **Production:** cost, quality and security monitoring, online evals, the improvement loop | (planned) | |
 
-The stages that predate the curriculum (3–5) keep working until their parts replace them.
+The stages that predate the curriculum (4–5) keep working until their parts replace them.
 ## Contents
 
 <!-- toc -->
@@ -42,7 +42,7 @@ The stages that predate the curriculum (3–5) keep working until their parts re
 - [Running the lessons](#running-the-lessons)
   - [Part 1: LangChain essentials](#part-1-langchain-essentials)
   - [Part 2: Production-ready agents](#part-2-production-ready-agents)
-  - [Stage 3: LangGraph agent](#stage-3-langgraph-agent)
+  - [Part 3: LangGraph core](#part-3-langgraph-core)
   - [Stage 4: LangSmith evaluation](#stage-4-langsmith-evaluation)
   - [Stage 5: LangGraph Server and Studio](#stage-5-langgraph-server-and-studio)
 - [Project layout](#project-layout)
@@ -262,8 +262,7 @@ Embeddings run locally on your CPU (`BAAI/bge-small-en-v1.5` via fastembed). The
 |---|---|---|
 | List the lessons | `uv run poe lessons` | `docker compose run --rm app poe lessons` |
 | Run a lesson | `uv run poe lesson 1.6` | `docker compose run --rm app poe lesson 1.6` |
-| Stages 3–4 (until Parts 3 and 5 replace them) | `uv run poe stage3` / `stage4` | `docker compose run --rm app poe stage3` / `stage4` |
-| Stage 3, no prompt | `uv run poe stage3 --auto-approve` | `docker compose run --rm app poe stage3 --auto-approve` |
+| Stage 4 (until Part 5 replaces it) | `uv run poe stage4` | `docker compose run --rm app poe stage4` |
 | Stage 5 server | `uv run poe server` | `docker compose up -d server` |
 | Stage 5 client | `uv run poe stage5` (second terminal) | `docker compose run --rm app poe stage5` |
 | Tests | `uv run poe test` | `docker compose run --rm app poe test` |
@@ -302,32 +301,38 @@ lessons it covers and the concepts it teaches. Each has a `run()` the tests driv
 | 2.8 Dynamic agents | model chosen by difficulty, tools chosen by plan | Free customers are never offered `open_ticket` |
 | 2.9 Capstone | the email assistant (`src/docshelp/email_assistant.py`): verify sender → account tools unlock → research → approved reply | the reply in `data/outbox.jsonl` only after approval; `--review` to edit it |
 
-### Stage 3: LangGraph agent
-```bash
-uv run poe stage3                   # you approve or reject the ticket
-uv run poe stage3 --auto-approve
-```
-The graph (`src/docshelp/graph.py`) routes each message by intent, grades the retrieved docs, rewrites the
-query and retries if they're irrelevant, and pauses with `interrupt()` before opening a support ticket.
-**Look for:**
-- the node-by-node path printed for each turn
-- turn 2 ("can an admin still get *them* back?") resolved using earlier turns (memory via the checkpointer)
-- the run *stopping* until you approve
-- the snapshot count at the end (time travel)
-- `graph.mmd`, a diagram of the graph (paste it into <https://mermaid.live>)
+### Part 3: LangGraph core
+
+| Lesson | What you see | Look for |
+|---|---|---|
+| 3.1 State, nodes, edges | a clean → tag → reply pipeline as a `StateGraph`; each node's partial update | the model only ever sees the cleaned text (email masked) |
+| 3.2 Conditional edges and `Command` | an LLM router built twice: `add_conditional_edges`, then `Command(goto=...)` | both versions route the same messages to the same teams |
+| 3.3 ReAct agent by hand | `assistant` + `ToolNode` + `tools_condition` + a loop (`src/docshelp/react.py`), with memory | the graph `create_agent` builds for you |
+| 3.4 Studio | the graphs in `langgraph.json`, then `uv run poe server` to open LangGraph Studio | chat, step through nodes, edit state and fork in the UI |
+| 3.5 State schemas | TypedDict, dataclass and Pydantic state | Pydantic rejects bad *input*, but never checks node output |
+| 3.6 Reducers | two parallel taggers: `InvalidUpdateError`, then a custom reducer; `add_messages` replace and remove | messages replaced and removed by `id` |
+| 3.7 Multiple schemas | `input_schema` / `output_schema` and private state between nodes | the caller gets only `answer` and `sources` |
+| 3.8 Trim and filter | filter in the call, delete with `RemoveMessage`, trim by tokens | which strategy really shrinks the saved state |
+| 3.9 Summarizing chatbot | a `summary` key, a conditional summarize step (`src/docshelp/chatbot.py`) | the summary moving into the system prompt |
+| 3.10 External memory | `SqliteSaver`: session 2 continues session 1's thread from `data/checkpoints.sqlite` | the messages and checkpoints loaded from disk |
+| 3.11 Streaming | `values` + `updates` together, `messages` filtered by node, `astream_events` | tokens from the `assistant` node only |
+| 3.12 Breakpoints and editing state | `interrupt_before=["tools"]`, `update_state` to fix tool args, `as_node="tools"` to answer for a tool | the edited call (15 members) is the one that runs |
+| 3.13 Dynamic interrupts | `interrupt()` in a node: ask again for an invalid account id, manager approval over $100 (`--interactive`) | the refund pausing only when needed |
+| 3.14 Time travel | `get_state_history`, replay from a past step, fork with a changed question | the original branch left untouched |
+| 3.15 Capstone | the support graph (`src/docshelp/graph.py`): route → retrieve → grade → rewrite ↺ → answer, or ticket → approval (`--review`) | the `RetryPolicy`, the rewrite loop and the pause; `graph.mmd` diagram |
 
 ### Stage 4: LangSmith evaluation
 ```bash
 uv run poe stage4
 ```
 Uploads `data/eval_dataset.json` as a LangSmith dataset, then evaluates two systems on it: the plain RAG chain
-(lesson 1.5) and the LangGraph agent (stage 3). There are two evaluators:
+(lesson 1.5) and the LangGraph support graph (lesson 3.15). There are two evaluators:
 - an **LLM-as-judge** that checks each answer against the reference answer
 - a **code check** that the right source document was retrieved
 
 **Look for:** in LangSmith → *Datasets & Experiments* → `docshelp-qa`, select both experiments and click **Compare**.
 You'll see per-question scores, latency, token cost, and a link to each full trace.
-Also open *Tracing Projects* → `docshelp-demo` to see traces from the lessons and stages 3–5.
+Also open *Tracing Projects* → `docshelp-demo` to see traces from the lessons and stages 4–5.
 Without a LangSmith key the script runs the same evaluation locally and prints the scores.
 
 ### Stage 5: LangGraph Server and Studio
@@ -360,12 +365,14 @@ src/docshelp/
   team.py               supervisor + specialist agents (Part 2.3)
   middleware.py         AuditLog: custom middleware using every hook
   email_assistant.py    the support email assistant (Part 2 capstone)
-  graph.py              the LangGraph agent (dependencies injectable for tests)
-  server.py             graph instance for LangGraph Server
+  react.py              a ReAct agent built by hand in LangGraph (Part 3.3)
+  chatbot.py            a self-summarizing chatbot graph (Parts 3.9-3.10)
+  graph.py              the LangGraph support graph, Part 3 capstone (dependencies injectable)
+  server.py             graphs served by LangGraph Server / Studio
   console.py            UTF-8 terminal output on every OS
   tasks.py              init-env, doctor and the lesson runner behind `poe`
 lessons/                the curriculum: p1_langchain/, p2_production_agents/, ... (see CURRICULUM.md)
-stages/                 stages 3-5, kept until Parts 3, 5 and 8 replace them
+stages/                 stages 4-5, kept until Parts 5 and 8 replace them
 tests/                  offline tests: scripted fake LLM + fake embeddings, no keys needed
 langgraph.json          LangGraph Server / Studio config
 pyproject.toml          dependencies, provider extras, and the `poe` task definitions
@@ -482,5 +489,5 @@ it's just as useful for humans. `CLAUDE.md` points Claude Code at it.
   (and costs nothing) everywhere.
 - `InMemorySaver` / `InMemoryVectorStore` keep the demo dependency-free. For production, swap in
   `langgraph-checkpoint-postgres` and a persistent vector store; the rest of the code doesn't change.
-- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): LangGraph (Parts 3–4), LangSmith evaluation
+- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): LangGraph at scale (Part 4), LangSmith evaluation
   (Part 5), Deep Agents (Part 7), deployment with auth (Part 8), and production monitoring (Part 9).

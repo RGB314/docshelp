@@ -15,6 +15,7 @@ __pycache__/
 data/tickets.jsonl
 data/outbox.jsonl
 data/audit.jsonl
+data/checkpoints.sqlite*
 graph.mmd
 
 # Personal editor / assistant settings.
