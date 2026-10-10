@@ -461,5 +461,5 @@ it's just as useful for humans. `CLAUDE.md` points Claude Code at it.
   (and costs nothing) everywhere.
 - `InMemorySaver` / `InMemoryVectorStore` keep the demo dependency-free. For production, swap in
   `langgraph-checkpoint-postgres` and a persistent vector store; the rest of the code doesn't change.
-- What's next is in [CURRICULUM.md](CURRICULUM.md): MCP, middleware and human-in-the-loop (Part 2), Deep Agents
+- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): MCP, middleware and human-in-the-loop (Part 2), Deep Agents
   (Part 7), deployment with auth (Part 8), and production monitoring (Part 9).
