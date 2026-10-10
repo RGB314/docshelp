@@ -14,7 +14,7 @@ with self-check questions.
 | Part | Theme | Run | Status |
 |---|---|---|---|
 | 1 | **LangChain essentials:** models and messages, prompts and LCEL, structured output, multimodal, RAG, tools and `create_agent`, streaming, short-term memory, dynamic prompts | `uv run poe lesson 1.1` … `1.10` | ✅ |
-| 2 | **Production-ready agents:** MCP, runtime context and state, multi-agent, middleware, human-in-the-loop, dynamic agents | (planned) | |
+| 2 | **Production-ready agents:** MCP, runtime context and state, multi-agent, middleware, long conversations, human-in-the-loop, dynamic agents | `uv run poe lesson 2.1` … `2.9` | ✅ |
 | 3 | **LangGraph core:** state, reducers, schemas, message management, persistence, streaming, interrupts, time travel | `uv run poe stage3` for now | |
 | 4 | **LangGraph at scale + long-term memory:** parallelism, subgraphs, map-reduce, the Store | (planned) | |
 | 5 | **LangSmith:** tracing, datasets, evaluators, experiments, prompts, feedback, annotation | `uv run poe stage4` for now | |
@@ -41,6 +41,7 @@ The stages that predate the curriculum (3–5) keep working until their parts re
   - [Configure `.env`](#configure-env-all-options)
 - [Running the lessons](#running-the-lessons)
   - [Part 1: LangChain essentials](#part-1-langchain-essentials)
+  - [Part 2: Production-ready agents](#part-2-production-ready-agents)
   - [Stage 3: LangGraph agent](#stage-3-langgraph-agent)
   - [Stage 4: LangSmith evaluation](#stage-4-langsmith-evaluation)
   - [Stage 5: LangGraph Server and Studio](#stage-5-langgraph-server-and-studio)
@@ -286,6 +287,21 @@ lessons it covers and the concepts it teaches. Each has a `run()` the tests driv
 | 1.8 Short-term memory | a checkpointer with one thread per conversation | a second thread knows nothing |
 | 1.9 Dynamic prompt | runtime `context` (the customer's plan) rewrites the system prompt per call | Free vs Enterprise answers to the same question |
 | 1.10 Capstone | the support agent (`src/docshelp/agents.py`): tools + memory + plan-aware prompt + `SupportAnswer` | `sources` and `needs_ticket` as data; `--chat` to talk to it |
+
+### Part 2: Production-ready agents
+
+| Lesson | What you see | Look for |
+|---|---|---|
+| 2.1 MCP | a local MCP server (`src/docshelp/mcp_server.py`) started over stdio; its tools, resource and prompt | MCP tools used by the agent exactly like local ones |
+| 2.2 Context and state | `ToolRuntime` reading the caller's account from context; a tool saving the device to custom state with `Command` | `my_account` has no arguments, so the model can't pick an account |
+| 2.3 Multi-agent | a supervisor delegating to docs, billing and MCP-backed status specialists (`src/docshelp/team.py`) | the supervisor only sees questions and answers, never the specialists' tool calls |
+| 2.4 Middleware | all six hooks logged by `AuditLog` (`src/docshelp/middleware.py`); a guard that ends the run early | the password message never reaches the model; the log in `data/audit.jsonl` |
+| 2.5 Prebuilt middleware | tool retry, tool and model call limits, model retry and fallback | a flaky tool recovers; a missing model falls back to a working one |
+| 2.6 Long conversations | `SummarizationMiddleware`, trimming with `RemoveMessage`, `ContextEditingMiddleware` | the message count dropping after the summary |
+| 2.7 Human in the loop | `HumanInTheLoopMiddleware` on `open_ticket`: approve, edit, reject (`--review` to decide yourself) | the edited priority is what's saved to `data/tickets.jsonl` |
+| 2.8 Dynamic agents | model chosen by difficulty, tools chosen by plan | Free customers are never offered `open_ticket` |
+| 2.9 Capstone | the email assistant (`src/docshelp/email_assistant.py`): verify sender → account tools unlock → research → approved reply | the reply in `data/outbox.jsonl` only after approval; `--review` to edit it |
+
 ### Stage 3: LangGraph agent
 ```bash
 uv run poe stage3                   # you approve or reject the ticket
@@ -337,13 +353,18 @@ src/docshelp/
     base.py             LLMProvider (abstract base) + ProviderRegistry (factory)
     vendors.py          Anthropic, OpenAI, Google Gemini, Groq and Ollama providers
   ingest.py             load → split → embed → InMemoryVectorStore → retriever
-  tools.py              search_docs and quote_price tools, save_ticket (writes data/tickets.jsonl)
+  tools.py              search_docs, quote_price, my_account, open_ticket, send_reply (data/*.jsonl)
+  customers.py          Customer runtime context + a stand-in accounts database
   agents.py             the create_agent support agent (Part 1 capstone)
+  mcp_server.py         the Nimbus Ops MCP server (status tools, resource, prompt)
+  team.py               supervisor + specialist agents (Part 2.3)
+  middleware.py         AuditLog: custom middleware using every hook
+  email_assistant.py    the support email assistant (Part 2 capstone)
   graph.py              the LangGraph agent (dependencies injectable for tests)
   server.py             graph instance for LangGraph Server
   console.py            UTF-8 terminal output on every OS
   tasks.py              init-env, doctor and the lesson runner behind `poe`
-lessons/                the curriculum: p1_langchain/01_models_and_messages.py ... (see CURRICULUM.md)
+lessons/                the curriculum: p1_langchain/, p2_production_agents/, ... (see CURRICULUM.md)
 stages/                 stages 3-5, kept until Parts 3, 5 and 8 replace them
 tests/                  offline tests: scripted fake LLM + fake embeddings, no keys needed
 langgraph.json          LangGraph Server / Studio config
@@ -461,5 +482,5 @@ it's just as useful for humans. `CLAUDE.md` points Claude Code at it.
   (and costs nothing) everywhere.
 - `InMemorySaver` / `InMemoryVectorStore` keep the demo dependency-free. For production, swap in
   `langgraph-checkpoint-postgres` and a persistent vector store; the rest of the code doesn't change.
-- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): MCP, middleware and human-in-the-loop (Part 2), Deep Agents
-  (Part 7), deployment with auth (Part 8), and production monitoring (Part 9).
+- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): LangGraph (Parts 3–4), LangSmith evaluation
+  (Part 5), Deep Agents (Part 7), deployment with auth (Part 8), and production monitoring (Part 9).

@@ -18,7 +18,7 @@ Run `uv run poe lessons` to list the lessons. Run one with `uv run poe lesson <n
 | Part | Theme | Builds on | Status |
 |---|---|---|---|
 | 1 | LangChain essentials: models, prompts, structured output, multimodal, RAG, tools, agents, streaming, memory | none | ✅ shipped |
-| 2 | Production-ready agents: MCP, runtime context and state, multi-agent, middleware, HITL, dynamic agents | 1 | planned |
+| 2 | Production-ready agents: MCP, runtime context and state, multi-agent, middleware, HITL, dynamic agents | 1 | ✅ shipped |
 | 3 | LangGraph core: state, nodes, edges, reducers, schemas, message management, persistence, streaming, interrupts, time travel | 1–2 | planned |
 | 4 | LangGraph at scale and long-term memory: parallelism, subgraphs, map-reduce, the Store, memory schemas | 3 | planned |
 | 5 | LangSmith: tracing, datasets, evaluators, experiments, prompt engineering, feedback, annotation | 1–4 | planned |
@@ -51,11 +51,11 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 | L2 Models and Messages | `lessons/p1_langchain/01_models_and_messages.py` |
 | L3 Streaming | `lessons/p1_langchain/07_streaming.py` |
 | L4 Tools | `lessons/p1_langchain/06_tools_and_agents.py` |
-| L5 Tools with MCP | Part 2 (planned) |
+| L5 Tools with MCP | `lessons/p2_production_agents/01_mcp.py` |
 | L6 Memory | `lessons/p1_langchain/08_short_term_memory.py` |
 | L7 Structured Output | `lessons/p1_langchain/03_structured_output.py`, `lessons/p1_langchain/10_capstone_support_agent.py` |
 | L8 Dynamic Prompt | `lessons/p1_langchain/09_dynamic_prompt.py` |
-| L9 Human in the Loop | Part 2 (planned) |
+| L9 Human in the Loop | `lessons/p2_production_agents/07_human_in_the_loop.py` |
 | Getting Set Up: Local Models | [README: Ollama setup](README.md#2-set-up-your-model-provider) |
 
 ### Introduction to LangChain (Python)
@@ -67,15 +67,15 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 | M1 L3 Short-Term Memory | `lessons/p1_langchain/08_short_term_memory.py` |
 | M1 L4 Multimodal Messages | `lessons/p1_langchain/04_multimodal.py` |
 | M1 L5 Personal Chef (project) | `lessons/p1_langchain/10_capstone_support_agent.py` |
-| M2 L1 Model Context Protocol | Part 2 (planned) |
-| M2 L2 Context and State | Part 2 (planned) |
-| M2 L3 Multi-Agent Systems | Part 2 (planned) |
-| M2 L4 Wedding Planner (project) | Part 2 (planned) |
-| M3 L1 What is Middleware? | Part 2 (planned) |
-| M3 L2 Managing Long Conversations | Part 2 (planned) |
-| M3 L3 Human In The Loop | Part 2 (planned) |
-| M3 L4 Dynamic Agents | Part 2 (planned) |
-| M3 L5 Email Assistant (project) | Part 2 (planned) |
+| M2 L1 Model Context Protocol | `lessons/p2_production_agents/01_mcp.py` (server: `src/docshelp/mcp_server.py`) |
+| M2 L2 Context and State | `lessons/p2_production_agents/02_context_and_state.py` |
+| M2 L3 Multi-Agent Systems | `lessons/p2_production_agents/03_multi_agent.py` |
+| M2 L4 Wedding Planner (project) | `lessons/p2_production_agents/03_multi_agent.py` (a support team: supervisor plus docs, billing and MCP-backed status specialists) |
+| M3 L1 What is Middleware? | `lessons/p2_production_agents/04_middleware.py`, `lessons/p2_production_agents/05_prebuilt_middleware.py` |
+| M3 L2 Managing Long Conversations | `lessons/p2_production_agents/06_long_conversations.py` |
+| M3 L3 Human In The Loop | `lessons/p2_production_agents/07_human_in_the_loop.py` |
+| M3 L4 Dynamic Agents | `lessons/p2_production_agents/08_dynamic_agents.py`, `lessons/p1_langchain/09_dynamic_prompt.py` |
+| M3 L5 Email Assistant (project) | `lessons/p2_production_agents/09_capstone_email_assistant.py` |
 | M3 L6 Agent Chat UI | Part 8 (planned) |
 
 ### Quickstart: LangGraph Essentials (Python)
@@ -211,6 +211,7 @@ Real support apps need these, and the current Academy courses don't teach them o
 |---|---|
 | RAG: loaders, splitters, local embeddings, vector store, retriever, citations | `lessons/p1_langchain/05_rag.py` |
 | Provider-neutral model layer (swap vendors via config) | `src/docshelp/providers/` + `lessons/p1_langchain/01_models_and_messages.py` |
+| Agent security: identity from context, never from tool arguments; verification gates; credential guard | `lessons/p2_production_agents/02_context_and_state.py`, `lessons/p2_production_agents/09_capstone_email_assistant.py`, `lessons/p2_production_agents/04_middleware.py` |
 
 ### LCAE Practice Exam
 
@@ -262,4 +263,70 @@ Pydantic validates them, so you don't have to parse free text.
 
 The two phrases share no words. Embeddings compare meaning, so the vectors of the question and the Refunds
 section end up close together anyway.
+</details>
+
+### Part 2 self-check
+
+<details>
+<summary>1. Why does <code>my_account</code> take no arguments, when it clearly needs an account id?</summary>
+
+It reads the id from `runtime.context`, which the app sets per run. If the id were an argument, the model
+would choose it, and a customer could talk the model into looking up someone else's account. Anything that
+decides *whose* data a tool touches belongs in context (or verified state), not in tool arguments.
+</details>
+
+<details>
+<summary>2. The customer says "I'm on Windows" and a later tool needs that. Context or state? How does the tool save it?</summary>
+
+State: it was learned during the conversation, while context is fixed when the run starts. Declare the field in
+a custom `state_schema` (an `AgentState` subclass), and have the tool return `Command(update={"device": ...,
+"messages": [ToolMessage(..., tool_call_id=runtime.tool_call_id)]})`. The `ToolMessage` is required, because
+every tool call needs an answer.
+</details>
+
+<details>
+<summary>3. The supervisor asks the billing specialist "and how much would that cost them?" Why does that fail?</summary>
+
+A specialist starts with a fresh message list, so it never saw the conversation and "that" and "them" mean
+nothing to it. That isolation is the point of subagents as tools (small contexts), so the supervisor must ask
+complete, standalone questions. Facts like the customer's account travel as runtime context instead.
+</details>
+
+<details>
+<summary>4. With <code>middleware=[A, B]</code>, in which order do the hooks run?</summary>
+
+`before_agent` and `before_model`: A, then B. `after_model` and `after_agent`: B, then A. Wrap hooks nest: A's
+`wrap_model_call` wraps B's, which wraps the real call.
+</details>
+
+<details>
+<summary>5. Summarization, trimming, context editing: which ones change the saved conversation?</summary>
+
+Summarization replaces old messages in state with a summary. Trimming with `RemoveMessage` deletes them from
+state. `ContextEditingMiddleware` only changes the request sent to the model, so the saved history keeps the
+full tool results.
+</details>
+
+<details>
+<summary>6. Why does <code>HumanInTheLoopMiddleware</code> need a checkpointer, and what do the three decisions do?</summary>
+
+The run stops mid-loop and returns `__interrupt__`. The checkpointer saves the paused state so
+`Command(resume=...)` can continue it later, even in another process. `approve` runs the call as proposed.
+`edit` runs a corrected call. `reject` skips the call and returns your message to the model.
+</details>
+
+<details>
+<summary>7. Lesson 2.5 sets <code>on_failure="error"</code> on the model retry. What breaks with the default, <code>"continue"</code>?</summary>
+
+After the last retry, `"continue"` turns the failure into an ordinary AI message saying the call failed. The
+fallback middleware outside it sees a successful call and never tries the backup model. Retry must raise for
+the fallback to take over.
+</details>
+
+<details>
+<summary>8. The capstone hides <code>lookup_account</code> until verification, and the tool also refuses unless state says verified. Why both?</summary>
+
+Defence in depth. Hiding the tool keeps the model from trying, and saves tokens. The check inside the tool
+still holds if a misconfigured middleware or a direct call ever reaches it. It also reads the account from
+verified state, never from the model.
 </details>

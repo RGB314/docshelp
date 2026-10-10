@@ -41,6 +41,9 @@ Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both mu
 - `src/docshelp/graph.py`: the LangGraph agent. Dependencies (llm, retriever, checkpointer, provider) are
   injectable for tests.
 - `src/docshelp/agents.py`: the `create_agent` support agent that later parts extend.
+- `src/docshelp/customers.py`: the `Customer` runtime context and a stand-in accounts database.
+- `src/docshelp/{mcp_server,team,middleware,email_assistant}.py`: Part 2's MCP server, supervisor team,
+  `AuditLog` middleware and email assistant.
 - `src/docshelp/{ingest,tools,console,tasks,server}.py`: RAG pipeline, tools, UTF-8 output, `poe` helpers
   (including the lesson runner), and the LangGraph Server entry point.
 - `lessons/p<part>_<topic>/<NN>_<topic>.py`: the curriculum. `stages/`: stages 3–5, until their parts replace them.
@@ -48,7 +51,7 @@ Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both mu
 
 ## Rules
 
-1. **Provider-neutral app code.** Lessons, stages, `graph.py` and `agents.py` must never name a vendor, model
+1. **Provider-neutral app code.** Lessons, stages and the agent modules in `src/docshelp/` must never name a vendor, model
    or structured-output method. Use `get_llm()`, `get_llm(fast=True)` and `structured_llm(llm, Schema)`. A hygiene test enforces this.
 2. **Adding a provider** takes three steps and changes no existing code:
    - add a subclass with `@registry.register` in `providers/vendors.py`
@@ -89,4 +92,5 @@ Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both mu
   `test (ubuntu-latest)`, `test (windows-latest)`, `test (macos-latest)` and `docker-e2e` must pass.
   Direct pushes, force pushes and branch deletion are blocked.
 - Keep pull requests focused, with a clear description. Never commit `.env`, `.cache/`, `.venv/`,
-  `data/tickets.jsonl`, `graph.mmd` or `.claude/settings.local.json`; they're all git-ignored.
+  `data/tickets.jsonl`, `data/outbox.jsonl`, `data/audit.jsonl`, `graph.mmd` or `.claude/settings.local.json`;
+  they're all git-ignored.

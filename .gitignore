@@ -13,6 +13,8 @@ __pycache__/
 .cache/
 .langgraph_api/
 data/tickets.jsonl
+data/outbox.jsonl
+data/audit.jsonl
 graph.mmd
 
 # Personal editor / assistant settings.
