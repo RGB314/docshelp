@@ -17,7 +17,7 @@ with self-check questions.
 | 2 | **Production-ready agents:** MCP, runtime context and state, multi-agent, middleware, long conversations, human-in-the-loop, dynamic agents | `uv run poe lesson 2.1` … `2.9` | ✅ |
 | 3 | **LangGraph core:** state, reducers, schemas, message management, persistence, streaming, interrupts, time travel, Studio | `uv run poe lesson 3.1` … `3.15` | ✅ |
 | 4 | **LangGraph at scale + long-term memory:** parallelism, subgraphs, map-reduce, a research assistant, the Store, memory schemas | `uv run poe lesson 4.1` … `4.9` | ✅ |
-| 5 | **LangSmith:** tracing, datasets, evaluators, experiments, prompts, feedback, annotation | `uv run poe stage4` for now | |
+| 5 | **LangSmith:** tracing, datasets, evaluators, experiments, pairwise, evals as tests, prompts, feedback, annotation | `uv run poe lesson 5.1` … `5.12` | ✅ |
 | 6 | **Agent projects:** an ambient support-inbox agent and a deep-research agent | (planned) | |
 | 7 | **Deep Agents:** planning, filesystems, sandboxes, skills, memory, subagents | (planned) | |
 | 8 | **Deployment:** LangGraph Server, SDK, assistants, double texting, custom routes, auth, Chat UI | `uv run poe stage5` for now | |
@@ -44,7 +44,7 @@ The stages that predate the curriculum (4–5) keep working until their parts re
   - [Part 2: Production-ready agents](#part-2-production-ready-agents)
   - [Part 3: LangGraph core](#part-3-langgraph-core)
   - [Part 4: LangGraph at scale and long-term memory](#part-4-langgraph-at-scale-and-long-term-memory)
-  - [Stage 4: LangSmith evaluation](#stage-4-langsmith-evaluation)
+  - [Part 5: LangSmith observability and evaluation](#part-5-langsmith-observability-and-evaluation)
   - [Stage 5: LangGraph Server and Studio](#stage-5-langgraph-server-and-studio)
 - [Project layout](#project-layout)
 - [Tests](#tests)
@@ -116,7 +116,7 @@ Under the hood:
 |---|---|---|
 | uv, **or** Docker | Yes | See the options above. uv installs Python 3.12 and all dependencies into `.venv`. |
 | **One** model provider (see below) | Yes | Every lesson calls a chat model. The default, Ollama, is free and local; Groq and Gemini have free tiers. |
-| LangSmith API key | Optional (needed for stage 4 in LangSmith) | Tracing and evaluation. Without it, stage 4 runs its evaluation locally. |
+| LangSmith API key | Optional (free Developer account) | Tracing, datasets, experiments, prompts and feedback in the LangSmith UI. Without it, Part 5 runs everything locally. |
 | Internet access | Yes | For downloads, plus a one-time ~70 MB embedding model. With Ollama, the lessons then run fully offline. |
 | ~1.5 GB disk | Yes | Python, the virtual environment and the model cache (plus ~5 GB per model if you use Ollama). |
 
@@ -134,7 +134,7 @@ Override the models with `DOCSHELP_MODEL` / `DOCSHELP_FAST_MODEL` / `DOCSHELP_VI
 often; check your provider's model list if a default is retired. The paid providers are optional and never
 needed. Ollama runs everything for free on your machine. For the tool-heavy later parts (6–7), a free Groq or
 Gemini key gives noticeably better results than a small local model. Free tiers have rate limits, and
-stage 4 makes about 50 calls, so it may run slowly on them.
+the experiment lessons (5.6, 5.7) make about 50 calls, so they may run slowly on them.
 
 ### 1. Install uv (one time, Option A only)
 
@@ -263,7 +263,7 @@ Embeddings run locally on your CPU (`BAAI/bge-small-en-v1.5` via fastembed). The
 |---|---|---|
 | List the lessons | `uv run poe lessons` | `docker compose run --rm app poe lessons` |
 | Run a lesson | `uv run poe lesson 1.6` | `docker compose run --rm app poe lesson 1.6` |
-| Stage 4 (until Part 5 replaces it) | `uv run poe stage4` | `docker compose run --rm app poe stage4` |
+| Evals against your model (lesson 5.9) | `uv run poe evals` | `docker compose run --rm app poe evals` |
 | Stage 5 server | `uv run poe server` | `docker compose up -d server` |
 | Stage 5 client | `uv run poe stage5` (second terminal) | `docker compose run --rm app poe stage5` |
 | Tests | `uv run poe test` | `docker compose run --rm app poe test` |
@@ -336,19 +336,27 @@ lessons it covers and the concepts it teaches. Each has a `run()` the tests driv
 | 4.8 Memory collection | `PastIssue` items: one updated to solved, one inserted | `issue-1` updated in place, `issue-2` added |
 | 4.9 Capstone | a support agent that decides what to remember (`src/docshelp/memory.py`) | a brand-new thread already knows the customer's problem |
 
-### Stage 4: LangSmith evaluation
-```bash
-uv run poe stage4
-```
-Uploads `data/eval_dataset.json` as a LangSmith dataset, then evaluates two systems on it: the plain RAG chain
-(lesson 1.5) and the LangGraph support graph (lesson 3.15). There are two evaluators:
-- an **LLM-as-judge** that checks each answer against the reference answer
-- a **code check** that the right source document was retrieved
+### Part 5: LangSmith observability and evaluation
 
-**Look for:** in LangSmith → *Datasets & Experiments* → `docshelp-qa`, select both experiments and click **Compare**.
-You'll see per-question scores, latency, token cost, and a link to each full trace.
-Also open *Tracing Projects* → `docshelp-demo` to see traces from the lessons and stages 4–5.
-Without a LangSmith key the script runs the same evaluation locally and prints the scores.
+Every lesson runs **without a LangSmith account**: the same `langsmith` SDK builds traces locally (saved to
+`data/traces.jsonl`) and runs evaluations with `upload_results=False`. Add `LANGSMITH_TRACING=true` and a free
+`LANGSMITH_API_KEY` to `.env` to see the same traces, datasets, experiments, prompts and feedback in the
+LangSmith UI.
+
+| Lesson | What you see | Look for |
+|---|---|---|
+| 5.1 Tracing basics | one agent request as a tree of runs, with latency and tokens (`src/docshelp/observability.py`) | where the time and tokens went |
+| 5.2 Run types and `@traceable` | a hand-written RAG pipeline traced as retriever → prompt → llm → parser | the email masked in the recorded inputs |
+| 5.3 Threads and analysis | two conversations grouped by `thread_id`; the slowest model calls | per-thread turns, tokens and latency |
+| 5.4 Datasets | `data/eval_dataset.json` as examples with splits and a version; synthetic variations | "base" vs "edge" splits |
+| 5.5 Evaluators | code checks, an LLM judge (`openevals`), trajectory checks (`agentevals`) | a right answer reached the wrong way still fails |
+| 5.6 Experiments | the RAG chain vs the support graph over the dataset, compared (replaces stage 4) | the questions where they disagree |
+| 5.7 Pairwise | a judge picks the better of two answers, with the order swapped | position bias handled |
+| 5.8 Summary evaluators | ticket triage scored with precision, recall and F1 | one score for the whole experiment |
+| 5.9 Evals as tests | `evals/` run with pytest and LangSmith's pytest plugin (`uv run poe evals`) | failing evals as test failures |
+| 5.10 Prompt engineering | prompt versions in a hub (`src/docshelp/prompts.py`), evaluated, then promoted by tag | `docshelp-rag:prod` moving to the better version |
+| 5.11 User feedback | 👍/👎 attached to the exact run that was rated (`--rate` to rate yourself) | feedback joined to traces |
+| 5.12 Annotation queues | uncited answers queued for review; corrections become dataset examples (`--review`) | the loop from mistake to test case |
 
 ### Stage 5: LangGraph Server and Studio
 ```bash
@@ -368,6 +376,7 @@ step. The same client code works against a cloud deployment (LangSmith Deploymen
 data/docs/              8 short Markdown pages documenting the made-up product
 data/eval_dataset.json  9 question / reference-answer / expected-source examples
 data/changelog.md       release notes; data/sample_tickets.jsonl: past tickets (Part 4)
+data/triage_dataset.json  support emails labelled needs_ticket (lesson 5.8)
 src/docshelp/
   config.py             Settings (from env vars), get_llm / structured_llm facades, local fastembed embeddings
   providers/
@@ -386,12 +395,16 @@ src/docshelp/
   sources.py            changelog, status page and sample tickets as extra sources (Part 4)
   research.py           the research assistant graph (Part 4.4)
   memory.py             long-term memory: schemas, trustcall updates, the memory agent (Part 4)
+  observability.py      tracing (LangSmith or local), trace log, feedback (Part 5)
+  evals.py              datasets, targets, evaluators, experiments, pairwise judge (Part 5)
+  prompts.py            versioned prompts: LangSmith Prompt Hub or a local twin (Part 5)
   graph.py              the LangGraph support graph, Part 3 capstone (dependencies injectable)
   server.py             graphs served by LangGraph Server / Studio
   console.py            UTF-8 terminal output on every OS
   tasks.py              init-env, doctor and the lesson runner behind `poe`
 lessons/                the curriculum: p1_langchain/, p2_production_agents/, ... (see CURRICULUM.md)
-stages/                 stages 4-5, kept until Parts 5 and 8 replace them
+stages/                 stage 5, kept until Part 8 replaces it
+evals/                  evals as pytest tests (lesson 5.9; `uv run poe evals`), not part of `poe test`
 tests/                  offline tests: scripted fake LLM + fake embeddings, no keys needed
 langgraph.json          LangGraph Server / Studio config
 pyproject.toml          dependencies, provider extras, and the `poe` task definitions
@@ -508,5 +521,5 @@ it's just as useful for humans. `CLAUDE.md` points Claude Code at it.
   (and costs nothing) everywhere.
 - `InMemorySaver` / `InMemoryVectorStore` keep the demo dependency-free. For production, swap in
   `langgraph-checkpoint-postgres` and a persistent vector store; the rest of the code doesn't change.
-- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): LangSmith evaluation
-  (Part 5), Deep Agents (Part 7), deployment with auth (Part 8), and production monitoring (Part 9).
+- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): ambient and deep-research
+  agents (Part 6), Deep Agents (Part 7), deployment with auth (Part 8), and production monitoring (Part 9).

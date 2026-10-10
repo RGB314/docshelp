@@ -21,7 +21,7 @@ Run `uv run poe lessons` to list the lessons. Run one with `uv run poe lesson <n
 | 2 | Production-ready agents: MCP, runtime context and state, multi-agent, middleware, HITL, dynamic agents | 1 | ✅ shipped |
 | 3 | LangGraph core: state, nodes, edges, reducers, schemas, message management, persistence, streaming, interrupts, time travel | 1–2 | ✅ shipped |
 | 4 | LangGraph at scale and long-term memory: parallelism, subgraphs, map-reduce, the Store, memory schemas | 3 | ✅ shipped |
-| 5 | LangSmith: tracing, datasets, evaluators, experiments, prompt engineering, feedback, annotation | 1–4 | planned |
+| 5 | LangSmith: tracing, datasets, evaluators, experiments, prompt engineering, feedback, annotation | 1–4 | ✅ shipped |
 | 6 | Agent projects: an ambient support-inbox agent and a deep-research agent | 1–5 | planned |
 | 7 | Deep Agents: planning, filesystems, sandboxes, skills, memory, subagents, agents-from-config | 1–6 | planned |
 | 8 | Deployment: LangGraph Server, SDK, assistants, double texting, custom routes, auth, Store, Chat UI | 3–7 | planned |
@@ -122,11 +122,17 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 
 | Academy lesson | Covered by |
 |---|---|
-| M1 L1 Tracing Basics, L2 Types of Runs, L3 Alternative Ways to Trace, L4 Conversational Threads | Part 5 (planned) |
-| M2 L1 Datasets, L2 Evaluators, L3 Experiments, L4 Analyzing Experiment Results | Part 5 (planned) |
-| M2 L5 Pairwise Experiments, L6 Summary Evaluators | Part 5 (planned) |
-| M3 L1 Playground, L2 Prompt Hub, L3 Prompt Engineering Lifecycle, L4 Polly | Part 5 (planned) |
-| M4 L1 User Feedback, L2 Annotation Queues | Part 5 (planned) |
+| M1 L1 Tracing Basics | `lessons/p5_langsmith/01_tracing_basics.py` |
+| M1 L2 Types of Runs, L3 Alternative Ways to Trace | `lessons/p5_langsmith/02_run_types_and_traceable.py` |
+| M1 L4 Conversational Threads | `lessons/p5_langsmith/03_threads_and_analysis.py` |
+| M2 L1 Datasets | `lessons/p5_langsmith/04_datasets.py` |
+| M2 L2 Evaluators | `lessons/p5_langsmith/05_evaluators.py` |
+| M2 L3 Experiments, L4 Analyzing Experiment Results | `lessons/p5_langsmith/06_experiments.py` |
+| M2 L5 Pairwise Experiments | `lessons/p5_langsmith/07_pairwise.py` |
+| M2 L6 Summary Evaluators | `lessons/p5_langsmith/08_summary_evaluators.py` |
+| M3 L1 Playground, L2 Prompt Hub, L3 Prompt Engineering Lifecycle, L4 Polly | `lessons/p5_langsmith/10_prompt_engineering.py` (hub: `src/docshelp/prompts.py`; Playground and Polly are walked through in the docstring) |
+| M4 L1 User Feedback | `lessons/p5_langsmith/11_user_feedback.py` |
+| M4 L2 Annotation Queues | `lessons/p5_langsmith/12_annotation_queues.py` |
 | M5 L1 Filtering, L2 Online Evaluation, L3 Automations, L4 Monitoring, L5 Custom Dashboards | Part 9 (planned) |
 
 ### Building Reliable Agents with LangSmith
@@ -134,9 +140,12 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 | Academy lesson | Covered by |
 |---|---|
 | Intro: The Agent Development Lifecycle | Part 9 (planned) |
-| M1 L1 Observability, L2 Tracing with LangSmith, L3 Analyzing your Agent | Part 5 (planned) |
-| M2 L1 Evaluating Agents, L2 Creating Datasets, L3 Running Experiments | Part 5 (planned) |
-| M2 L4 Code-based Eval, L5 LLM-as-Judge, L6 Pairwise Evaluations | Part 5 (planned) |
+| M1 L1 Observability, L2 Tracing with LangSmith | `lessons/p5_langsmith/01_tracing_basics.py` |
+| M1 L3 Analyzing your Agent | `lessons/p5_langsmith/03_threads_and_analysis.py` |
+| M2 L1 Evaluating Agents, L2 Creating Datasets | `lessons/p5_langsmith/04_datasets.py`, `lessons/p5_langsmith/09_evals_as_tests.py` |
+| M2 L3 Running Experiments | `lessons/p5_langsmith/06_experiments.py` |
+| M2 L4 Code-based Eval, L5 LLM-as-Judge | `lessons/p5_langsmith/05_evaluators.py` |
+| M2 L6 Pairwise Evaluations | `lessons/p5_langsmith/07_pairwise.py` |
 | M3 L1 Moving Towards Production, L2 Insights Agent, L3 Online Evals, L4 Automations | Part 9 (planned) |
 
 ### Quickstart: LangSmith Essentials
@@ -144,8 +153,8 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 | Academy lesson | Covered by |
 |---|---|
 | M1 Debugging with Studio | `lessons/p3_langgraph/04_studio.py` |
-| M1 What is Tracing?, Capstone | Part 5 (planned) |
-| M2 Datasets and Offline Evals, Experiments, Capstone | Part 5 (planned) |
+| M1 What is Tracing?, Capstone | `lessons/p5_langsmith/01_tracing_basics.py`, `lessons/p5_langsmith/03_threads_and_analysis.py` |
+| M2 Datasets and Offline Evals, Experiments, Capstone | `lessons/p5_langsmith/04_datasets.py`, `lessons/p5_langsmith/06_experiments.py`, `lessons/p5_langsmith/09_evals_as_tests.py` |
 | M3 Deployments | Part 8 (planned) |
 | M4 Online Evaluators and Automations, Annotation Queues, Insights, Dashboards, Capstone | Part 9 (planned) |
 | M5 Closing the Loop, Automating the ADLC with LangSmith Engine | Part 9 (planned) |
@@ -472,4 +481,67 @@ and updatable on its own. The preferred OS has one current value, so it fits the
 
 Call `store.search(("issues", account), query="slow sync", filter={"status": "open"}, limit=5)`. Store internal
 notes with `put(..., index=False)`, so they're never embedded and never match a semantic query.
+</details>
+
+### Part 5 self-check
+
+<details>
+<summary>1. What do you change in the code to start tracing every lesson to LangSmith?</summary>
+
+Nothing. Set `LANGSMITH_TRACING=true` and `LANGSMITH_API_KEY` (optionally `LANGSMITH_PROJECT`). LangChain and
+LangGraph then trace every call automatically. `@traceable` and `trace()` are only needed for your own
+non-LangChain code.
+</details>
+
+<details>
+<summary>2. Your retrieval function is plain Python. How do you make it show up as a retriever step, with documents, in the trace?</summary>
+
+Decorate it with `@traceable(run_type="retriever")` and return a list of
+`{"page_content", "type": "Document", "metadata"}` dicts. LangSmith then renders it as retrieved documents
+(lesson 5.2).
+</details>
+
+<details>
+<summary>3. How does LangSmith know that five traces are one conversation?</summary>
+
+They share a `thread_id` (or `session_id` / `conversation_id`) in their metadata. The Threads view groups
+them and sums tokens and latency per conversation (lesson 5.3).
+</details>
+
+<details>
+<summary>4. Which evaluator type would you use to check (a) the right doc was retrieved, (b) the answer is correct, (c) the agent called the pricing tool?</summary>
+
+(a) A code evaluator, since the answer is exact and cheap to check. (b) An LLM-as-judge against the reference
+answer. (c) A trajectory evaluator, `agentevals`' match evaluator in `superset` mode, or an LLM trajectory
+judge (lesson 5.5).
+</details>
+
+<details>
+<summary>5. Why can't precision or F1 be an ordinary evaluator?</summary>
+
+They're defined over the whole set: precision needs every escalated email, not one example's output. That's
+what `summary_evaluators` are for. They receive every example's outputs and references at once (lesson 5.8).
+</details>
+
+<details>
+<summary>6. Your pairwise judge prefers answer A 80% of the time, whichever system wrote it. What's wrong, and how do you fix it?</summary>
+
+That's position bias. Show the pair in alternating (or random) order, and map the verdict back to the system.
+`pairwise_judge(..., swap=...)` does this, and LangSmith's `randomize_order=True` too (lesson 5.7).
+</details>
+
+<details>
+<summary>7. How do you ship a prompt change without a code deploy, and undo it?</summary>
+
+Push the new version to the prompt hub and evaluate it against the dataset. If it wins, move the `prod` tag to
+its commit. The app pulls `"docshelp-rag:prod"`, so moving the tag back to the old commit is the rollback
+(lesson 5.10).
+</details>
+
+<details>
+<summary>8. A customer clicks 👎. How does that end up preventing the same mistake next release?</summary>
+
+The rating is stored as feedback on that run's id (5.11). A rule queues the run for review (5.12), the reviewer
+writes the correct answer, and it becomes a dataset example. The next experiment (5.6) or `poe evals` (5.9) then
+tests that exact case.
 </details>

@@ -12,9 +12,9 @@ to be built, in what order, and how to pick the work up in a new session.
 | 1 | LangChain essentials | ✅ Merged (PR #4) |
 | 2 | Production-ready agents with LangChain | ✅ Shipped (PR #6) |
 | 3 | LangGraph core (absorbs `stages/03`) | ✅ Shipped (PR #7) |
-| 4 | LangGraph at scale + long-term memory | ✅ Shipped (branch `feat/curriculum-part4-langgraph-scale`) |
-| 5 | LangSmith observability and evaluation (absorbs `stages/04`) | ⏭️ Next |
-| 6 | Agent projects: ambient inbox and deep research | Planned |
+| 4 | LangGraph at scale + long-term memory | ✅ Shipped (PR #8) |
+| 5 | LangSmith observability and evaluation (absorbs `stages/04`) | ✅ Shipped (branch `feat/curriculum-part5-langsmith`) |
+| 6 | Agent projects: ambient inbox and deep research | ⏭️ Next |
 | 7 | Deep Agents (plus dcode, Fleet and MDA twins) | Planned |
 | 8 | Deployment (absorbs `stages/05`) | Planned |
 | 9 | Production monitoring and the improvement loop | Planned |
@@ -142,28 +142,40 @@ Part 6 (deep research) scales up 4.4. Part 6's ambient agent learns preferences 
 Part 8 serves the memory agent with the server's own Store.
 
 ### Part 5: LangSmith (Observability & Evals; Building Reliable Agents; LangSmith Essentials M1–M2)
-Replaces `stages/04`. New dependency: `agentevals`.
-1. Tracing basics.
-2. Run types.
-3. Other ways to trace: `@traceable`, `wrap_*`, the context manager and OpenTelemetry.
-4. Threads, metadata and tags.
-5. Datasets: create, version and split.
-6. Evaluators:
-   - code-based
-   - LLM-as-judge
-   - trajectory (`agentevals`)
-7. Experiments and how to analyse them.
-8. Pairwise evaluation.
-9. Summary evaluators.
-10. The pytest plugin, for evals as tests.
-11. Prompt Hub push and pull, the Playground, and versioned prompts.
-12. Feedback (`create_feedback`).
-13. Annotation queues.
+Shipped as built. Replaced `stages/04`. Dependency added: `agentevals` (which brings `openevals`). New data:
+`data/eval_dataset.json` gained splits, and `data/triage_dataset.json` was added. New: `evals/` with the `uv run poe evals` task.
 
-Local twins:
-- a JSONL trace recorder (`src/docshelp/observability.py`)
-- a local experiment runner with a comparison table
-- a local pairwise runner
+The local twins use the real `langsmith` SDK:
+- tracing uses `tracing_context(enabled="local")` with `observability.offline_client()`, which never sends
+- evaluation uses `evaluate(..., upload_results=False)` over in-memory `Example`s
+
+Lessons:
+1. Tracing basics.
+2. Run types and `@traceable` / `trace()` / `process_inputs`.
+3. Threads and trace analysis.
+4. Datasets: splits, versions, synthetic examples.
+5. Evaluators: code, LLM judge, trajectory.
+6. Experiments: RAG chain vs support graph.
+7. Pairwise, with position swap; online it uses `evaluate((a, b))`.
+8. Summary evaluators: precision, recall, F1.
+9. Evals as tests with the LangSmith pytest plugin.
+10. Prompt hub lifecycle, with Playground and Polly explained.
+11. User feedback.
+12. Annotation queues: corrections become examples.
+
+Reuse in later parts:
+- `traced`, `record_feedback` and `load_rows`, which Part 9's dashboards and insights read from `data/traces.jsonl`
+- `run_experiment`, `make_examples` and `pairwise_judge`
+- `prompt_hub()`, which Part 9's Engine loop ships fixes through
+
+Online-only code paths aren't exercised by CI because they need a key:
+- `ensure_dataset`
+- `update_dataset_tag`
+- comparative `evaluate`
+- `create_annotation_queue`
+- `push_prompt`
+
+Verify them manually with a free key.
 
 ### Part 6: Agent projects (Project: Ambient Agents; Project: Deep Research)
 New optional extra: `web = ["ddgs"]`.

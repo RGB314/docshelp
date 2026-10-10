@@ -16,6 +16,10 @@ data/tickets.jsonl
 data/outbox.jsonl
 data/audit.jsonl
 data/checkpoints.sqlite*
+data/traces.jsonl
+data/feedback.jsonl
+data/annotation_queue.jsonl
+data/prompts/
 graph.mmd
 
 # Personal editor / assistant settings.

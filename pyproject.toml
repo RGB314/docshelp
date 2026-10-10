@@ -7,6 +7,7 @@ license = "Apache-2.0"
 license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = [
+    "agentevals>=0.0.9",
     "fastembed>=0.8.1",
     "langchain>=1.4.2",
     "langchain-mcp-adapters>=0.3.2",
@@ -48,6 +49,8 @@ markers = [
 filterwarnings = [
     # trustcall (lessons 4.7-4.9) still imports Send from its pre-1.0 location; harmless until LangGraph 2.0.
     "ignore:Importing Send from langgraph.constants is deprecated",
+    # langsmith's evaluator-name detection mentions ast.Str for older Pythons; harmless.
+    "ignore:ast.Str is deprecated:DeprecationWarning",
 ]
 
 # Cross-shell task runner: `uv run poe <task>` behaves the same in PowerShell, cmd, Git Bash, macOS and Linux.
@@ -63,6 +66,6 @@ test = { cmd = "pytest -m \"not e2e\"", help = "Unit and integration tests: offl
 e2e = { cmd = "pytest -m e2e", help = "End-to-end tests: stages as processes + real LangGraph Server (no keys; real-model runs need DOCSHELP_E2E_MODEL + Ollama)" }
 lessons = { script = "docshelp.tasks:lessons_main", help = "List every lesson in curriculum order" }
 lesson = { script = "docshelp.tasks:lesson_main", help = "Run one lesson: uv run poe lesson 1.6 (extra args are passed on)" }
-stage4 = { cmd = "python stages/04_langsmith_eval.py", help = "LangSmith datasets and evaluation" }
+evals = { cmd = "pytest evals -p no:cacheprovider", help = "DocsHelp evals against your real model (LangSmith-tracked if configured; see lesson 5.9)" }
 stage5 = { cmd = "python stages/05_langgraph_server.py", help = "LangGraph SDK client (start `poe server` first)" }
 server = { cmd = "langgraph dev", help = "LangGraph Server + Studio on http://127.0.0.1:2024" }

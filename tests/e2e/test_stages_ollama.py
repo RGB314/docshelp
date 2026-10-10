@@ -14,7 +14,7 @@ import pytest
 
 from docshelp.tasks import find_lessons
 
-from .helpers import ROOT, base_env, langgraph_server, ollama_ready, run_lesson, run_stage
+from .helpers import ROOT, base_env, langgraph_server, ollama_ready, run_evals, run_lesson, run_stage
 
 pytestmark = pytest.mark.e2e
 
@@ -50,18 +50,11 @@ def test_lesson_runs_to_completion(ollama_env, code):
 
 
 @requires_ollama
-@pytest.mark.parametrize(
-    "script, args, expected",
-    [
-        ("04_langsmith_eval.py", (), "langgraph-agent:"),
-    ],
-    ids=["stage4"],
-)
-def test_stage_runs_to_completion(ollama_env, script, args, expected):
-    result = run_stage(script, ollama_env, *args, timeout=1500)
-    assert result.returncode == 0, result.stdout[-3000:] + result.stderr[-3000:]
-    assert expected in result.stdout
-    assert "Using Ollama" in result.stdout
+def test_evals_run_against_the_real_model(ollama_env):
+    result = run_evals(ollama_env, timeout=1500)
+    # A tiny model may fail an eval; what matters is that the suite runs and reports (exit 0 or 1, not 2+).
+    assert result.returncode in (0, 1), result.stdout[-3000:] + result.stderr[-3000:]
+    assert "passed" in result.stdout or "failed" in result.stdout
 
 
 @requires_ollama
