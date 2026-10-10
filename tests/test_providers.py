@@ -72,6 +72,12 @@ def test_missing_key_error_names_env_var_and_signup_url(name):
     assert provider.signup_url in str(err.value)
 
 
+@pytest.mark.parametrize("name", list(EXPECTED))
+def test_every_provider_has_a_vision_capable_model(name):
+    provider = registry.create(name, env={})
+    assert provider.vision_model  # its default model, or a separate one when the default is text-only
+
+
 def test_gemini_also_accepts_gemini_api_key():
     llm = registry.create("google", env={"GEMINI_API_KEY": "g-key"}).chat_model()
     assert api_key(llm) == "g-key"

@@ -1,6 +1,6 @@
 # DocsHelp in a container: the same Linux + Python 3.12 environment on Windows, macOS and Linux hosts.
 #   docker compose build
-#   docker compose run --rm app poe stage1
+#   docker compose run --rm app poe lesson 1.1
 # See README "Option B: Docker".
 
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim

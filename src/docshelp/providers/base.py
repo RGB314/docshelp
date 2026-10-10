@@ -36,6 +36,7 @@ class LLMProvider(ABC):
     api_key_envs: ClassVar[tuple[str, ...]]  # env vars checked in order; empty if no key is needed
     default_model: ClassVar[str]
     fast_model: ClassVar[str]  # a smaller / cheaper model from the same provider
+    vision_model: ClassVar[str]  # a model that accepts images (often the default model itself)
     signup_url: ClassVar[str]  # where to get an API key (or download the runtime)
     structured_output_method: ClassVar[str] = "json_schema"
 
@@ -75,11 +76,17 @@ class LLMProvider(ABC):
     # --- template method ------------------------------------------------------------------
 
     def chat_model(
-        self, model: str | None = None, *, fast: bool = False, max_tokens: int = 4096, **kwargs: Any
+        self,
+        model: str | None = None,
+        *,
+        fast: bool = False,
+        vision: bool = False,
+        max_tokens: int = 4096,
+        **kwargs: Any,
     ) -> BaseChatModel:
         """Build a LangChain chat model for this provider."""
         self.check()
-        chosen = model or (self.fast_model if fast else self.default_model)
+        chosen = model or (self.vision_model if vision else self.fast_model if fast else self.default_model)
         return self._create(chosen, max_tokens, **kwargs)
 
     @abstractmethod

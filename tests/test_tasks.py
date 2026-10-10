@@ -53,8 +53,40 @@ def test_poethepoet_is_a_dev_dependency():
 
 def test_poe_tasks_cover_the_whole_workflow():
     poe_tasks = PYPROJECT["tool"]["poe"]["tasks"]
-    for name in ("init-env", "doctor", "test", "server", "stage1", "stage2", "stage3", "stage4", "stage5"):
+    for name in ("init-env", "doctor", "test", "server", "lessons", "lesson", "stage3", "stage4", "stage5"):
         assert name in poe_tasks, f"missing poe task {name!r}"
+
+
+def test_lessons_are_found_by_part_and_number():
+    lessons = tasks.find_lessons()
+    assert lessons, "no lessons found"
+    codes = [code for code, _ in lessons]
+    assert codes == sorted(codes, key=lambda c: tuple(map(int, c.split("."))))
+    assert "1.1" in codes
+    assert tasks.lesson_path("1.1").name.startswith("01_")
+    assert tasks.lesson_path("01.01") == tasks.lesson_path("1.1")  # leading zeros are fine
+
+
+def test_every_lesson_has_a_title_and_a_main():
+    for code, path in tasks.find_lessons():
+        module = tasks.load_lesson(code)
+        assert tasks.lesson_title(path), f"{path.name} needs a docstring"
+        assert callable(getattr(module, "main", None)), f"{path.name} needs main()"
+        assert callable(getattr(module, "run", None)), f"{path.name} needs run() for offline tests"
+
+
+def test_unknown_lesson_lists_the_options(capsys):
+    with pytest.raises(SystemExit) as exit_info:
+        tasks.lesson_main(["9.99"])
+    assert exit_info.value.code == 1
+    assert "1.1" in capsys.readouterr().err
+
+
+def test_lessons_main_prints_every_lesson(capsys):
+    tasks.lessons_main()
+    out = capsys.readouterr().out
+    for code, _ in tasks.find_lessons():
+        assert f"{code} " in out
 
 
 def test_unit_and_e2e_suites_are_separate_tasks():
@@ -65,7 +97,7 @@ def test_unit_and_e2e_suites_are_separate_tasks():
     assert any(m.startswith("e2e:") for m in markers)
 
 
-@pytest.mark.parametrize("n", range(1, 6))
+@pytest.mark.parametrize("n", range(3, 6))  # stages 1-2 became Part 1 lessons; the rest follow part by part
 def test_stage_tasks_point_at_existing_scripts(n):
     task = PYPROJECT["tool"]["poe"]["tasks"][f"stage{n}"]
     cmd = task["cmd"] if isinstance(task, dict) else task
