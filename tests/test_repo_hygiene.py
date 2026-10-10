@@ -41,7 +41,7 @@ def test_no_local_machine_paths_in_repo():
 def test_secrets_and_local_files_are_git_ignored():
     ignored = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
     for entry in (".env", ".venv/", ".cache/", "data/tickets.jsonl", "data/outbox.jsonl", "data/audit.jsonl",
-                  "data/checkpoints.sqlite*"):
+                  "data/checkpoints.sqlite*", "data/traces.jsonl", "data/feedback.jsonl"):
         assert entry in ignored
 
 
@@ -112,11 +112,13 @@ def test_license_is_declared():
 APP_CODE = [
     *sorted((ROOT / "lessons").glob("p*/*.py")),
     *sorted((ROOT / "stages").glob("*.py")),
+    *sorted((ROOT / "evals").glob("*.py")),
     *(
         ROOT / "src" / "docshelp" / name
         for name in (
             "graph.py", "agents.py", "team.py", "middleware.py", "email_assistant.py", "mcp_server.py",
             "react.py", "chatbot.py", "server.py", "research.py", "memory.py", "sources.py",
+            "observability.py", "evals.py", "prompts.py",
         )
     ),
 ]

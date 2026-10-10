@@ -46,6 +46,11 @@ def run_lesson(code: str, env: Mapping[str, str], *args: str, timeout: int = 180
     return _run([sys.executable, "-c", runner, code, *args], env, timeout)
 
 
+def run_evals(env: Mapping[str, str], timeout: int = 600) -> subprocess.CompletedProcess:
+    """`uv run poe evals`: the eval suite in `evals/`, against the configured model."""
+    return _run([sys.executable, "-m", "pytest", "evals", "-p", "no:cacheprovider", "-q"], env, timeout)
+
+
 def _run(command: list[str], env: Mapping[str, str], timeout: int) -> subprocess.CompletedProcess:
     return subprocess.run(
         command,

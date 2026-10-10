@@ -1,0 +1,10 @@
+[
+  {"email": "Half the notes in my Research notebook vanished after the last sync. I need them back today.", "needs_ticket": true},
+  {"email": "How do I change the colour of a tag?", "needs_ticket": false},
+  {"email": "We were charged twice for October. Please refund the duplicate payment.", "needs_ticket": true},
+  {"email": "Is there a keyboard shortcut for a new note?", "needs_ticket": false},
+  {"email": "SCIM keeps creating duplicate users in Entra ID and locks people out.", "needs_ticket": true},
+  {"email": "Can I export a notebook as Markdown?", "needs_ticket": false},
+  {"email": "The desktop app crashes on startup since 4.12 on two of our Macs.", "needs_ticket": true},
+  {"email": "What's the difference between the Team and Enterprise plans?", "needs_ticket": false}
+]

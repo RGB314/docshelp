@@ -4,13 +4,10 @@ import pytest
 
 from docshelp.tasks import find_lessons
 
-from .helpers import PROVIDER_KEYS, base_env, free_port, run_lesson, run_stage
+from .helpers import PROVIDER_KEYS, base_env, free_port, run_evals, run_lesson, run_stage
 
 pytestmark = pytest.mark.e2e
 
-STAGES_NEEDING_A_MODEL = [
-    "04_langsmith_eval.py",
-]
 LESSONS = [code for code, _ in find_lessons()]
 
 
@@ -23,13 +20,12 @@ def test_lesson_without_key_explains_what_to_set(code):
     assert "Traceback" not in result.stderr
 
 
-@pytest.mark.parametrize("script", STAGES_NEEDING_A_MODEL)
-def test_stage_without_key_explains_what_to_set(script):
-    result = run_stage(script, base_env(DOCSHELP_PROVIDER="anthropic"))
+def test_evals_without_key_explain_what_to_set():
+    result = run_evals(base_env(DOCSHELP_PROVIDER="anthropic"))
 
-    assert result.returncode == 1
-    assert "ANTHROPIC_API_KEY" in result.stderr
-    assert "Traceback" not in result.stderr
+    assert result.returncode == 1, result.stdout[-2000:] + result.stderr[-2000:]
+    assert "ANTHROPIC_API_KEY" in result.stdout + result.stderr
+    assert "Traceback" not in result.stdout + result.stderr
 
 
 @pytest.mark.parametrize("provider", PROVIDER_KEYS)

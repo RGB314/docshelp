@@ -2,7 +2,7 @@
 #
 #   docker compose build
 #   docker compose run --rm app poe doctor          # check your provider setup
-#   docker compose run --rm app poe lesson 1.1      # any lesson (`poe lessons` lists them), stage4, `poe test`
+#   docker compose run --rm app poe lesson 1.1      # any lesson (`poe lessons` lists them), `poe evals`, `poe test`
 #   docker compose up -d server                     # LangGraph Server + Studio on http://127.0.0.1:2024
 #   docker compose run --rm app poe stage5          # SDK client talking to that server
 #   docker compose --profile ollama up -d ollama    # optional: free local models in a container

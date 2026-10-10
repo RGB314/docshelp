@@ -94,7 +94,8 @@ class FakeChatModel(BaseChatModel):
         return self
 
     def with_structured_output(self, schema, **kwargs):
-        return RunnableLambda(lambda _input: self.structured[schema].pop(0))
+        key = schema.get("title") if isinstance(schema, dict) else schema  # JSON-schema dicts by their title
+        return RunnableLambda(lambda _input: self.structured[key].pop(0))
 
 
 def tool_call(name: str, args: dict, call_id: str = "call_1") -> AIMessage:
