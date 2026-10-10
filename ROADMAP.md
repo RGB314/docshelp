@@ -11,9 +11,9 @@ to be built, in what order, and how to pick the work up in a new session.
 |---|---|---|
 | 1 | LangChain essentials | ✅ Merged (PR #4) |
 | 2 | Production-ready agents with LangChain | ✅ Shipped (PR #6) |
-| 3 | LangGraph core (absorbs `stages/03`) | ✅ Shipped (branch `feat/curriculum-part3-langgraph`) |
-| 4 | LangGraph at scale + long-term memory | ⏭️ Next |
-| 5 | LangSmith observability and evaluation (absorbs `stages/04`) | Planned |
+| 3 | LangGraph core (absorbs `stages/03`) | ✅ Shipped (PR #7) |
+| 4 | LangGraph at scale + long-term memory | ✅ Shipped (branch `feat/curriculum-part4-langgraph-scale`) |
+| 5 | LangSmith observability and evaluation (absorbs `stages/04`) | ⏭️ Next |
 | 6 | Agent projects: ambient inbox and deep research | Planned |
 | 7 | Deep Agents (plus dcode, Fleet and MDA twins) | Planned |
 | 8 | Deployment (absorbs `stages/05`) | Planned |
@@ -121,15 +121,25 @@ Reuse in later parts:
 Parallel branches appeared only briefly, in 3.6 (reducers). Part 4 teaches them properly, with fan-out/fan-in and `Send`.
 
 ### Part 4: LangGraph at scale + long-term memory (Intro to LangGraph M4–M5)
-1. Parallel fan-out and fan-in [docs, changelog and status page].
-2. Subgraphs [a ticket-handling subgraph].
-3. Map-reduce with `Send` [summarize each retrieved doc].
-4. A research assistant [generates a FAQ article from the docs].
-5. Short-term versus long-term memory.
-6. Store: `InMemoryStore`, the `PostgresStore` concept, and semantic search with fastembed.
-7. A memory schema as a profile [plan, OS, devices].
-8. A memory schema as a collection [past issues].
-9. Capstone: DocsHelp remembers the customer across threads.
+Shipped as built. Dependency added: `trustcall`. New data: `data/changelog.md` and
+`data/sample_tickets.jsonl` (read through `sources.py`).
+1. Parallel fan-out and fan-in over docs, changelog and status, with a list join.
+2. Two subgraphs with shared and private keys and `output_schema`; streamed with `subgraphs=True`.
+3. Map-reduce with `Send`: one note per document.
+4. Research assistant (`research.py`): HITL perspectives, interview subgraphs, parallel writers.
+5. The Store, cross-thread memory, and `create_agent(store=...)`.
+6. Semantic store search with fastembed, plus filters and `index=False`.
+7. Profile memory patched with trustcall.
+8. Collection memory with inserts and updates.
+9. Capstone memory agent (`memory.py`).
+
+Reuse in later parts:
+- the `CustomerProfile` and `PastIssue` schemas
+- `make_store`, `recall` and `update_*` from `memory.py`
+- `build_research_graph`
+
+Part 6 (deep research) scales up 4.4. Part 6's ambient agent learns preferences with the same Store patterns.
+Part 8 serves the memory agent with the server's own Store.
 
 ### Part 5: LangSmith (Observability & Evals; Building Reliable Agents; LangSmith Essentials M1–M2)
 Replaces `stages/04`. New dependency: `agentevals`.

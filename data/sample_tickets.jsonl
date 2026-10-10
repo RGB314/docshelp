@@ -1,0 +1,7 @@
+{"id": "NIM-1A2B3C", "account_id": "acct-1001", "summary": "Sync icon shows a red slash after laptop wakes from sleep", "priority": "normal", "status": "open", "platform": "windows"}
+{"id": "NIM-4D5E6F", "account_id": "acct-2002", "summary": "SCIM provisioning creates duplicate users in Entra ID", "priority": "high", "status": "open", "platform": "web"}
+{"id": "NIM-7A8B9C", "account_id": "acct-1001", "summary": "Notes created on iPhone missing on Windows for 20 minutes", "priority": "high", "status": "open", "platform": "windows"}
+{"id": "NIM-0D1E2F", "account_id": "acct-demo", "summary": "How do I export a notebook as PDF?", "priority": "low", "status": "solved", "platform": "macos"}
+{"id": "NIM-3A4B5C", "account_id": "acct-2002", "summary": "Sync stuck at 99% for a 4 GB notebook", "priority": "high", "status": "open", "platform": "macos"}
+{"id": "NIM-6D7E8F", "account_id": "acct-1001", "summary": "Charged for 12 seats but only 11 members", "priority": "normal", "status": "solved", "platform": "web"}
+{"id": "NIM-9A0B1C", "account_id": "acct-demo", "summary": "Tray icon red slash on Windows after sleep, sync actually fine", "priority": "low", "status": "open", "platform": "windows"}

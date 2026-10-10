@@ -16,7 +16,7 @@ with self-check questions.
 | 1 | **LangChain essentials:** models and messages, prompts and LCEL, structured output, multimodal, RAG, tools and `create_agent`, streaming, short-term memory, dynamic prompts | `uv run poe lesson 1.1` … `1.10` | ✅ |
 | 2 | **Production-ready agents:** MCP, runtime context and state, multi-agent, middleware, long conversations, human-in-the-loop, dynamic agents | `uv run poe lesson 2.1` … `2.9` | ✅ |
 | 3 | **LangGraph core:** state, reducers, schemas, message management, persistence, streaming, interrupts, time travel, Studio | `uv run poe lesson 3.1` … `3.15` | ✅ |
-| 4 | **LangGraph at scale + long-term memory:** parallelism, subgraphs, map-reduce, the Store | (planned) | |
+| 4 | **LangGraph at scale + long-term memory:** parallelism, subgraphs, map-reduce, a research assistant, the Store, memory schemas | `uv run poe lesson 4.1` … `4.9` | ✅ |
 | 5 | **LangSmith:** tracing, datasets, evaluators, experiments, prompts, feedback, annotation | `uv run poe stage4` for now | |
 | 6 | **Agent projects:** an ambient support-inbox agent and a deep-research agent | (planned) | |
 | 7 | **Deep Agents:** planning, filesystems, sandboxes, skills, memory, subagents | (planned) | |
@@ -43,6 +43,7 @@ The stages that predate the curriculum (4–5) keep working until their parts re
   - [Part 1: LangChain essentials](#part-1-langchain-essentials)
   - [Part 2: Production-ready agents](#part-2-production-ready-agents)
   - [Part 3: LangGraph core](#part-3-langgraph-core)
+  - [Part 4: LangGraph at scale and long-term memory](#part-4-langgraph-at-scale-and-long-term-memory)
   - [Stage 4: LangSmith evaluation](#stage-4-langsmith-evaluation)
   - [Stage 5: LangGraph Server and Studio](#stage-5-langgraph-server-and-studio)
 - [Project layout](#project-layout)
@@ -321,6 +322,20 @@ lessons it covers and the concepts it teaches. Each has a `run()` the tests driv
 | 3.14 Time travel | `get_state_history`, replay from a past step, fork with a changed question | the original branch left untouched |
 | 3.15 Capstone | the support graph (`src/docshelp/graph.py`): route → retrieve → grade → rewrite ↺ → answer, or ticket → approval (`--review`) | the `RetryPolicy`, the rewrite loop and the pause; `graph.mmd` diagram |
 
+### Part 4: LangGraph at scale and long-term memory
+
+| Lesson | What you see | Look for |
+|---|---|---|
+| 4.1 Parallelization | docs, changelog and status page searched at once, then one answer | step 1 runs three nodes; `answer` waits for the longer docs branch |
+| 4.2 Subgraphs | a ticket review made of two subgraphs (failure analysis, FAQ ideas) run in parallel | events streamed from *inside* each subgraph; private keys never reach the parent |
+| 4.3 Map-reduce | one `Send` per retrieved document takes notes, then one answer from the notes | as many parallel calls as documents |
+| 4.4 Research assistant | an editor approves reader perspectives, interviews run in parallel, then an article is written (`src/docshelp/research.py`) | the feedback loop; `--interactive` to be the editor |
+| 4.5 Store | a fact sheet written to the Store and recalled in a *new* thread; a `create_agent` tool writing to it | thread 2 knows the OS without seeing thread 1 |
+| 4.6 Semantic memory search | past tickets embedded locally and searched by meaning, with filters | the closest past issues for a new complaint |
+| 4.7 Memory profile | a `CustomerProfile` extracted, then *patched* with trustcall | switching to macOS keeps every other field |
+| 4.8 Memory collection | `PastIssue` items: one updated to solved, one inserted | `issue-1` updated in place, `issue-2` added |
+| 4.9 Capstone | a support agent that decides what to remember (`src/docshelp/memory.py`) | a brand-new thread already knows the customer's problem |
+
 ### Stage 4: LangSmith evaluation
 ```bash
 uv run poe stage4
@@ -352,6 +367,7 @@ step. The same client code works against a cloud deployment (LangSmith Deploymen
 ```
 data/docs/              8 short Markdown pages documenting the made-up product
 data/eval_dataset.json  9 question / reference-answer / expected-source examples
+data/changelog.md       release notes; data/sample_tickets.jsonl: past tickets (Part 4)
 src/docshelp/
   config.py             Settings (from env vars), get_llm / structured_llm facades, local fastembed embeddings
   providers/
@@ -367,6 +383,9 @@ src/docshelp/
   email_assistant.py    the support email assistant (Part 2 capstone)
   react.py              a ReAct agent built by hand in LangGraph (Part 3.3)
   chatbot.py            a self-summarizing chatbot graph (Parts 3.9-3.10)
+  sources.py            changelog, status page and sample tickets as extra sources (Part 4)
+  research.py           the research assistant graph (Part 4.4)
+  memory.py             long-term memory: schemas, trustcall updates, the memory agent (Part 4)
   graph.py              the LangGraph support graph, Part 3 capstone (dependencies injectable)
   server.py             graphs served by LangGraph Server / Studio
   console.py            UTF-8 terminal output on every OS
@@ -489,5 +508,5 @@ it's just as useful for humans. `CLAUDE.md` points Claude Code at it.
   (and costs nothing) everywhere.
 - `InMemorySaver` / `InMemoryVectorStore` keep the demo dependency-free. For production, swap in
   `langgraph-checkpoint-postgres` and a persistent vector store; the rest of the code doesn't change.
-- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): LangGraph at scale (Part 4), LangSmith evaluation
+- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): LangSmith evaluation
   (Part 5), Deep Agents (Part 7), deployment with auth (Part 8), and production monitoring (Part 9).

@@ -45,6 +45,7 @@ Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both mu
 - `src/docshelp/{mcp_server,team,middleware,email_assistant}.py`: Part 2's MCP server, supervisor team,
   `AuditLog` middleware and email assistant.
 - `src/docshelp/{react,chatbot}.py`: Part 3's hand-built ReAct agent and summarizing chatbot graphs.
+- `src/docshelp/{sources,research,memory}.py`: Part 4's extra knowledge sources, research assistant and long-term memory.
 - `src/docshelp/{ingest,tools,console,tasks,server}.py`: RAG pipeline, tools, UTF-8 output, `poe` helpers
   (including the lesson runner), and the LangGraph Server entry point.
 - `lessons/p<part>_<topic>/<NN>_<topic>.py`: the curriculum. `stages/`: stages 4–5, until their parts replace them.

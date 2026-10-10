@@ -19,6 +19,7 @@ dependencies = [
     "mcp>=1.30.0",
     "pillow>=12.0.0",
     "python-dotenv>=1.2.3",
+    "trustcall>=0.0.39",
 ]
 
 # One extra per model provider: `uv sync --extra ollama` (or `--all-extras`).
@@ -43,6 +44,10 @@ dev = [
 testpaths = ["tests"]
 markers = [
     "e2e: end-to-end tests that run stages as processes and start a real LangGraph Server (`poe e2e`)",
+]
+filterwarnings = [
+    # trustcall (lessons 4.7-4.9) still imports Send from its pre-1.0 location; harmless until LangGraph 2.0.
+    "ignore:Importing Send from langgraph.constants is deprecated",
 ]
 
 # Cross-shell task runner: `uv run poe <task>` behaves the same in PowerShell, cmd, Git Bash, macOS and Linux.
