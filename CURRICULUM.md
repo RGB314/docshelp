@@ -20,7 +20,7 @@ Run `uv run poe lessons` to list the lessons. Run one with `uv run poe lesson <n
 | 1 | LangChain essentials: models, prompts, structured output, multimodal, RAG, tools, agents, streaming, memory | none | ✅ shipped |
 | 2 | Production-ready agents: MCP, runtime context and state, multi-agent, middleware, HITL, dynamic agents | 1 | ✅ shipped |
 | 3 | LangGraph core: state, nodes, edges, reducers, schemas, message management, persistence, streaming, interrupts, time travel | 1–2 | ✅ shipped |
-| 4 | LangGraph at scale and long-term memory: parallelism, subgraphs, map-reduce, the Store, memory schemas | 3 | planned |
+| 4 | LangGraph at scale and long-term memory: parallelism, subgraphs, map-reduce, the Store, memory schemas | 3 | ✅ shipped |
 | 5 | LangSmith: tracing, datasets, evaluators, experiments, prompt engineering, feedback, annotation | 1–4 | planned |
 | 6 | Agent projects: an ambient support-inbox agent and a deep-research agent | 1–5 | planned |
 | 7 | Deep Agents: planning, filesystems, sandboxes, skills, memory, subagents, agents-from-config | 1–6 | planned |
@@ -106,9 +106,15 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 | M3 L2 Breakpoints, L3 Editing State and Human Feedback | `lessons/p3_langgraph/12_breakpoints_and_editing_state.py` |
 | M3 L4 Dynamic Breakpoints | `lessons/p3_langgraph/13_dynamic_interrupts.py` |
 | M3 L5 Time Travel | `lessons/p3_langgraph/14_time_travel.py` |
-| M4 L1 Parallelization, L2 Sub-graphs, L3 Map-reduce, L4 Research Assistant | Part 4 (planned) |
-| M5 L1 Short vs Long-Term Memory, L2 LangGraph Store | Part 4 (planned) |
-| M5 L3 Memory Schema + Profile, L4 Memory Schema + Collection, L5 Agent with Long-Term Memory | Part 4 (planned) |
+| M4 L1 Parallelization | `lessons/p4_langgraph_scale/01_parallelization.py` |
+| M4 L2 Sub-graphs | `lessons/p4_langgraph_scale/02_subgraphs.py` |
+| M4 L3 Map-reduce | `lessons/p4_langgraph_scale/03_map_reduce.py` |
+| M4 L4 Research Assistant | `lessons/p4_langgraph_scale/04_research_assistant.py` (graph: `src/docshelp/research.py`) |
+| M5 L1 Short vs Long-Term Memory | `lessons/p4_langgraph_scale/05_store_and_long_term_memory.py` |
+| M5 L2 LangGraph Store | `lessons/p4_langgraph_scale/05_store_and_long_term_memory.py`, `lessons/p4_langgraph_scale/06_semantic_memory_search.py` |
+| M5 L3 Memory Schema + Profile | `lessons/p4_langgraph_scale/07_memory_profile.py` |
+| M5 L4 Memory Schema + Collection | `lessons/p4_langgraph_scale/08_memory_collection.py` |
+| M5 L5 Agent with Long-Term Memory | `lessons/p4_langgraph_scale/09_capstone_memory_agent.py` (agent: `src/docshelp/memory.py`) |
 | M6 L1 Deployment Concepts, L2 Creating a Deployment, L3 Connecting to a Deployment | Part 8 (planned) |
 | M6 L4 Double Texting, L5 Assistants | Part 8 (planned) |
 
@@ -411,4 +417,59 @@ original history stays as it was in both cases.
 The two errors are different kinds. A flaky store is transient, so retrying the same call is the fix. Irrelevant
 documents are something the LLM can recover from: the result goes into state (`docs_relevant`) and the graph
 loops through `rewrite` with a better query. Retrying the identical query would return the same documents.
+</details>
+
+### Part 4 self-check
+
+<details>
+<summary>1. Three parallel branches feed one <code>answer</code> node, but one branch has two steps. How do you make <code>answer</code> wait for all of them?</summary>
+
+Use `add_edge(["trim_docs", "search_changelog", "check_status"], "answer")`. A list of sources means "wait
+for all of these". With three separate edges, `answer` could run as soon as the shorter branches finish, and
+then run again.
+</details>
+
+<details>
+<summary>2. When do you need <code>Send</code> instead of ordinary fan-out edges?</summary>
+
+When the number of parallel branches depends on the data, such as one per retrieved document or one per
+analyst, or when each branch needs its own payload rather than the shared state. Ordinary edges are fixed
+when the graph is built.
+</details>
+
+<details>
+<summary>3. Two subgraphs both return <code>reviewed_ids</code>. What does the parent need, and what keeps a subgraph from returning its private keys?</summary>
+
+The parent needs a reducer on `reviewed_ids` (for example `operator.add`), because both subgraphs write it in
+the same step. Each subgraph's `output_schema` limits what it returns to the parent.
+</details>
+
+<details>
+<summary>4. Checkpointer vs Store: where would you keep "this customer uses Windows"?</summary>
+
+In the Store, under a namespace like `("profile", account_id)`. The checkpointer holds one thread's state, and
+a new conversation starts empty. The Store is shared across threads, and nodes and tools reach it through
+`runtime.store`.
+</details>
+
+<details>
+<summary>5. Why patch a profile with trustcall instead of asking the model to rewrite it?</summary>
+
+A rewrite tends to drop fields the latest message didn't mention, and it can return invalid JSON. trustcall
+asks for JSON patches against the existing document and retries with the validation error, so untouched
+fields survive (lesson 4.7).
+</details>
+
+<details>
+<summary>6. Profile or collection: which fits past issues, and which fits "preferred OS"?</summary>
+
+Past issues accumulate and change one at a time, so they fit a collection: one Store item each, searchable
+and updatable on its own. The preferred OS has one current value, so it fits the profile.
+</details>
+
+<details>
+<summary>7. The store has an embedding index. How do you find a customer's open issues that relate to "slow sync", and keep internal notes out of search?</summary>
+
+Call `store.search(("issues", account), query="slow sync", filter={"status": "open"}, limit=5)`. Store internal
+notes with `put(..., index=False)`, so they're never embedded and never match a semantic query.
 </details>
