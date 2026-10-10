@@ -80,14 +80,25 @@ def conversation_only(messages: list[BaseMessage]) -> list[BaseMessage]:
     return [m for m in messages if isinstance(m, HumanMessage) or (isinstance(m, AIMessage) and not m.tool_calls)]
 
 
-def update_profile(
-    store: BaseStore, account_id: str, extractor, messages: list[BaseMessage]
+def _extract(extractor, request: dict) -> dict | None:
+    """Run a trustcall extractor; on failure keep the old memory instead of failing the user's turn.
+
+    Writing memory is a side job: an answer shouldn't fail because remembering failed. (Small models
+    can trip trustcall's repair step, which also has a bug with LangGraph 1.x.)
+    """
+    try:
+        return extractor.invoke(request)
+    except Exception as err:  # noqa: BLE001 - best effort by design; the warning says what happened
+        print(f"  (memory not updated: {type(err).__name__}: {err})")
+        return None
+
+
+def update_profile(    store: BaseStore, account_id: str, extractor, messages: list[BaseMessage]
 ) -> CustomerProfile | None:
     existing = store.get(ns("profile", account_id), "profile")
-    result = extractor.invoke(
-        {"messages": messages, "existing": {"CustomerProfile": existing.value} if existing else None}
-    )
-    if not result["responses"]:  # the model produced nothing valid: keep what we had
+    current = {"CustomerProfile": existing.value} if existing else None
+    result = _extract(extractor, {"messages": messages, "existing": current})
+    if not result or not result["responses"]:  # the model produced nothing valid: keep what we had
         return None
     profile = result["responses"][0]
     store.put(ns("profile", account_id), "profile", profile.model_dump())
@@ -97,7 +108,9 @@ def update_profile(
 def update_issues(store: BaseStore, account_id: str, extractor, messages: list[BaseMessage]) -> list[str]:
     items = store.search(ns("issues", account_id), limit=100)
     existing = [(item.key, "PastIssue", item.value) for item in items]
-    result = extractor.invoke({"messages": messages, "existing": existing or None})
+    result = _extract(extractor, {"messages": messages, "existing": existing or None})
+    if not result:
+        return []
     keys, inserted = [], 0
     for issue, meta in zip(result["responses"], result["response_metadata"]):
         key = meta.get("json_doc_id")  # set when the model patched an existing item

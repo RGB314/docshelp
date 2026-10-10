@@ -144,6 +144,27 @@ def test_4_8_collection_updates_one_item_and_inserts_another(lesson):
     assert after["issue-2"]["summary"] == "PDF export drops images"  # inserted as a new item
 
 
+class BrokenExtractor:
+    """Stands in for trustcall failing mid-extraction (as its repair step can with LangGraph 1.x)."""
+
+    def invoke(self, _input):
+        raise AttributeError("'ExtractionState' object has no attribute 'tool_call_id'")
+
+
+def test_memory_updates_are_best_effort(capsys):
+    from langgraph.store.memory import InMemoryStore
+
+    from docshelp.memory import ns, update_issues, update_profile
+
+    store = InMemoryStore()
+    store.put(ns("profile", "a1"), "profile", {"name": "Ada"})
+
+    assert update_profile(store, "a1", BrokenExtractor(), []) is None
+    assert update_issues(store, "a1", BrokenExtractor(), []) == []
+    assert store.get(ns("profile", "a1"), "profile").value == {"name": "Ada"}  # kept, not corrupted
+    assert "memory not updated" in capsys.readouterr().out
+
+
 def test_4_9_capstone_memory_agent_remembers_across_threads(lesson, fake_retriever):
     from docshelp.memory import ns
 
