@@ -1,18 +1,20 @@
-"""E2E with a real model and no API keys: all five stages against a local Ollama model.
+"""E2E with a real model and no API keys: every lesson and stage against a local Ollama model.
 
 Opt-in (it needs Ollama and a pulled model), e.g.:
     ollama pull qwen2.5:0.5b
     DOCSHELP_E2E_MODEL=qwen2.5:0.5b uv run poe e2e
 CI runs this inside Docker Compose with the `ollama` service.
 
-Small models give weak answers; these tests check that every stage runs to completion, not answer quality.
+Small models give weak answers; these tests check that everything runs to completion, not answer quality.
 """
 
 import os
 
 import pytest
 
-from .helpers import ROOT, base_env, langgraph_server, ollama_ready, run_stage
+from docshelp.tasks import find_lessons
+
+from .helpers import ROOT, base_env, langgraph_server, ollama_ready, run_lesson, run_stage
 
 pytestmark = pytest.mark.e2e
 
@@ -36,16 +38,25 @@ def ollama_env(tmp_path):
     )
 
 
+# Lesson 1.4 needs an image-capable model, which the tiny CI model is not.
+TEXT_ONLY_LESSONS = [code for code, _ in find_lessons() if code != "1.4"]
+
+
+@requires_ollama
+@pytest.mark.parametrize("code", TEXT_ONLY_LESSONS)
+def test_lesson_runs_to_completion(ollama_env, code):
+    result = run_lesson(code, ollama_env, timeout=1500)
+    assert result.returncode == 0, result.stdout[-3000:] + result.stderr[-3000:]
+
+
 @requires_ollama
 @pytest.mark.parametrize(
     "script, args, expected",
     [
-        ("01_langchain_basics.py", (), "6. Swap the model"),
-        ("02_langchain_rag.py", (), "4. Tool-calling agent"),
         ("03_langgraph_agent.py", ("--auto-approve",), "snapshots for this thread"),
         ("04_langsmith_eval.py", (), "langgraph-agent:"),
     ],
-    ids=["stage1", "stage2", "stage3", "stage4"],
+    ids=["stage3", "stage4"],
 )
 def test_stage_runs_to_completion(ollama_env, script, args, expected):
     result = run_stage(script, ollama_env, *args, timeout=1500)

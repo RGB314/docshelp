@@ -20,3 +20,8 @@ def ensure_utf8(*streams: TextIO | None) -> None:
         encoding = (getattr(stream, "encoding", "") or "").lower().replace("-", "")
         if encoding != "utf8":
             reconfigure(encoding="utf-8", errors="replace")
+
+
+def header(title: str) -> None:
+    """Print a section banner (lessons use one per concept)."""
+    print(f"\n{'=' * 70}\n{title}\n{'=' * 70}")

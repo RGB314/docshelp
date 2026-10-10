@@ -5,11 +5,15 @@ Written in Python rather than PowerShell or bash so they behave identically on W
 
 from __future__ import annotations
 
+import ast
+import importlib.util
+import runpy
 import shutil
 import sys
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from types import ModuleType
 
 from docshelp.config import PROJECT_ROOT, Settings
 from docshelp.console import ensure_utf8
@@ -77,3 +81,71 @@ def doctor_main(env: Mapping[str, str] | None = None) -> int:
 
 def doctor_cli() -> None:
     sys.exit(doctor_main())
+
+
+# --- lessons: lessons/p<part>_<topic>/<NN>_<topic>.py, addressed as "<part>.<NN>" ------------------
+
+LESSONS_DIR = PROJECT_ROOT / "lessons"
+
+
+def find_lessons(root: Path = LESSONS_DIR) -> list[tuple[str, Path]]:
+    """Every lesson as ("<part>.<number>", path), in curriculum order."""
+    found = []
+    for path in root.glob("p*_*/[0-9][0-9]_*.py"):
+        part = int(path.parent.name[1:].split("_", 1)[0])
+        found.append(((part, int(path.name[:2])), path))
+    return [(f"{part}.{number}", path) for (part, number), path in sorted(found)]
+
+
+def lesson_path(code: str) -> Path:
+    """Path of lesson "1.6" (also accepts "01.06"). Raises KeyError if there is no such lesson."""
+    try:
+        wanted = tuple(int(n) for n in code.split("."))
+    except ValueError:
+        raise KeyError(code) from None
+    for found, path in find_lessons():
+        if tuple(map(int, found.split("."))) == wanted:
+            return path
+    raise KeyError(code)
+
+
+def lesson_title(path: Path) -> str:
+    """First line of the lesson's docstring."""
+    docstring = ast.get_docstring(ast.parse(path.read_text(encoding="utf-8"))) or ""
+    return docstring.splitlines()[0] if docstring else ""
+
+
+def load_lesson(code: str) -> ModuleType:
+    """Import a lesson as a module without running `main()` (file names start with digits, so no `import`)."""
+    path = lesson_path(code)
+    spec = importlib.util.spec_from_file_location(f"lesson_{code.replace('.', '_')}", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def lessons_main() -> None:
+    ensure_utf8()
+    part = None
+    for code, path in find_lessons():
+        if path.parent.name != part:
+            part = path.parent.name
+            print(f"\n{part}")
+        print(f"  {code:6} {lesson_title(path)}")
+    print("\nRun one with: uv run poe lesson <number>   e.g. uv run poe lesson 1.6")
+
+
+def lesson_main(argv: list[str] | None = None) -> None:
+    """`uv run poe lesson 1.6 [args...]`: run that lesson's script as `__main__`, passing the extra args on."""
+    ensure_utf8()
+    argv = sys.argv[1:] if argv is None else argv
+    try:
+        path = lesson_path(argv[0]) if argv else None
+    except KeyError:
+        path = None
+    if path is None:
+        codes = ", ".join(code for code, _ in find_lessons())
+        print(f"Usage: uv run poe lesson <number> [args]. Lessons: {codes}", file=sys.stderr)
+        sys.exit(1)
+    sys.argv = [str(path), *argv[1:]]
+    runpy.run_path(str(path), run_name="__main__")

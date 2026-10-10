@@ -2,17 +2,28 @@
 
 [![CI](https://github.com/RGB314/docshelp/actions/workflows/ci.yml/badge.svg)](https://github.com/RGB314/docshelp/actions/workflows/ci.yml)
 
-A small but realistic app, a support assistant for the made-up product **Nimbus Notes**, built in five stages.
-Each stage adds one product from the LangChain ecosystem, so you can see exactly what each one contributes.
+A small but realistic app, a support assistant for the made-up product **Nimbus Notes**, that grows lesson by
+lesson until it covers everything taught in the [LangChain Academy](https://academy.langchain.com/collections)
+(LangChain, LangGraph, LangSmith, Deep Agents and deployment). Every concept is applied to this one app instead
+of a different toy project per course, and everything runs at **zero cost**: local Ollama models by default,
+free-tier cloud models optionally, and no paid LangSmith features required.
 
-| Stage | Product | What it adds | Script |
+[CURRICULUM.md](CURRICULUM.md) maps every Academy lesson to the lesson here that teaches it, and ends each part
+with self-check questions.
+
+| Part | Theme | Run | Status |
 |---|---|---|---|
-| 1 | **LangChain** | One interface for any LLM; prompt templates; composing steps with `\|` (LCEL); streaming, batching, structured output | `stages/01_langchain_basics.py` |
-| 2 | **LangChain** | Answering from your own documents (RAG): loaders, splitters, embeddings, vector store, retriever; tools and a tool-calling agent | `stages/02_langchain_rag.py` |
-| 3 | **LangGraph** | Control flow you define (branches, loops), shared state, memory, human-in-the-loop approval, full state history | `stages/03_langgraph_agent.py` + `src/docshelp/graph.py` |
-| 4 | **LangSmith** | Tracing of every run, test datasets, automated evaluation, side-by-side comparison of experiments | `stages/04_langsmith_eval.py` |
-| 5 | **LangGraph Server + Studio** | The same graph served as an API (threads, runs, streaming, interrupts) plus a visual debugger | `langgraph.json` + `stages/05_langgraph_server.py` |
+| 1 | **LangChain essentials:** models and messages, prompts and LCEL, structured output, multimodal, RAG, tools and `create_agent`, streaming, short-term memory, dynamic prompts | `uv run poe lesson 1.1` … `1.10` | ✅ |
+| 2 | **Production-ready agents:** MCP, runtime context and state, multi-agent, middleware, human-in-the-loop, dynamic agents | (planned) | |
+| 3 | **LangGraph core:** state, reducers, schemas, message management, persistence, streaming, interrupts, time travel | `uv run poe stage3` for now | |
+| 4 | **LangGraph at scale + long-term memory:** parallelism, subgraphs, map-reduce, the Store | (planned) | |
+| 5 | **LangSmith:** tracing, datasets, evaluators, experiments, prompts, feedback, annotation | `uv run poe stage4` for now | |
+| 6 | **Agent projects:** an ambient support-inbox agent and a deep-research agent | (planned) | |
+| 7 | **Deep Agents:** planning, filesystems, sandboxes, skills, memory, subagents | (planned) | |
+| 8 | **Deployment:** LangGraph Server, SDK, assistants, double texting, custom routes, auth, Chat UI | `uv run poe stage5` for now | |
+| 9 | **Production:** cost, quality and security monitoring, online evals, the improvement loop | (planned) | |
 
+The stages that predate the curriculum (3–5) keep working until their parts replace them.
 ## Contents
 
 <!-- toc -->
@@ -28,9 +39,8 @@ Each stage adds one product from the LangChain ecosystem, so you can see exactly
   - [Option B: Docker Compose](#option-b-docker-compose)
   - [Option C: Dev Container / GitHub Codespaces](#option-c-dev-container--github-codespaces)
   - [Configure `.env`](#configure-env-all-options)
-- [Running the stages](#running-the-stages)
-  - [Stage 1: LangChain basics](#stage-1-langchain-basics)
-  - [Stage 2: RAG and a tool-calling agent](#stage-2-rag-and-a-tool-calling-agent)
+- [Running the lessons](#running-the-lessons)
+  - [Part 1: LangChain essentials](#part-1-langchain-essentials)
   - [Stage 3: LangGraph agent](#stage-3-langgraph-agent)
   - [Stage 4: LangSmith evaluation](#stage-4-langsmith-evaluation)
   - [Stage 5: LangGraph Server and Studio](#stage-5-langgraph-server-and-studio)
@@ -103,25 +113,26 @@ Under the hood:
 | What | Required? | Why |
 |---|---|---|
 | uv, **or** Docker | Yes | See the options above. uv installs Python 3.12 and all dependencies into `.venv`. |
-| **One** model provider (see below) | Yes | Every stage calls a chat model. Pick any supported provider, including free ones. |
+| **One** model provider (see below) | Yes | Every lesson calls a chat model. The default, Ollama, is free and local; Groq and Gemini have free tiers. |
 | LangSmith API key | Optional (needed for stage 4 in LangSmith) | Tracing and evaluation. Without it, stage 4 runs its evaluation locally. |
-| Internet access | Yes | For downloads, plus a one-time ~70 MB embedding model. With Ollama, the stages then run fully offline. |
+| Internet access | Yes | For downloads, plus a one-time ~70 MB embedding model. With Ollama, the lessons then run fully offline. |
 | ~1.5 GB disk | Yes | Python, the virtual environment and the model cache (plus ~5 GB per model if you use Ollama). |
 
 ### Supported model providers
 
-| `DOCSHELP_PROVIDER` | Cost | Default model / fast model | Key (env var) | Get it |
-|---|---|---|---|---|
-| `anthropic` (default) | Paid | `claude-sonnet-5` / `claude-haiku-4-5` | `ANTHROPIC_API_KEY` | [Claude Console](https://console.anthropic.com/settings/keys) |
-| `openai` | Paid | `gpt-5.4-mini` / `gpt-5-mini` | `OPENAI_API_KEY` | [OpenAI Platform](https://platform.openai.com/api-keys) |
-| `google` | Free tier | `gemini-3.8-flash` / `gemini-3.5-flash-lite` | `GOOGLE_API_KEY` (or `GEMINI_API_KEY`) | [Google AI Studio](https://aistudio.google.com/apikey) |
-| `groq` | Free tier | `openai/gpt-oss-120b` / `openai/gpt-oss-20b` | `GROQ_API_KEY` | [GroqCloud](https://console.groq.com/keys) |
-| `ollama` | Free, local | `qwen3:8b` / `qwen3:4b` | none (`OLLAMA_BASE_URL` optional) | [Ollama](https://ollama.com/download) |
+| `DOCSHELP_PROVIDER` | Cost | Default model / fast model | Vision model (lesson 1.4) | Key (env var) | Get it |
+|---|---|---|---|---|---|
+| `ollama` (default) | Free, local | `qwen3:8b` / `qwen3:4b` | `gemma3:4b` | none (`OLLAMA_BASE_URL` optional) | [Ollama](https://ollama.com/download) |
+| `groq` | Free tier | `openai/gpt-oss-120b` / `openai/gpt-oss-20b` | `meta-llama/llama-4-scout-17b-16e-instruct` | `GROQ_API_KEY` | [GroqCloud](https://console.groq.com/keys) |
+| `google` | Free tier | `gemini-3.8-flash` / `gemini-3.5-flash-lite` | default model | `GOOGLE_API_KEY` (or `GEMINI_API_KEY`) | [Google AI Studio](https://aistudio.google.com/apikey) |
+| `anthropic` | Paid | `claude-sonnet-5` / `claude-haiku-4-5` | default model | `ANTHROPIC_API_KEY` | [Claude Console](https://console.anthropic.com/settings/keys) |
+| `openai` | Paid | `gpt-5.4-mini` / `gpt-5-mini` | default model | `OPENAI_API_KEY` | [OpenAI Platform](https://platform.openai.com/api-keys) |
 
-Override the models with `DOCSHELP_MODEL` / `DOCSHELP_FAST_MODEL`. Model names change often; check your
-provider's model list if a default is retired. Free tiers have rate limits, and stage 4 makes about 50 calls,
-so it may run slowly on them. Small local models are noticeably weaker at tool use and structured output
-than the hosted ones.
+Override the models with `DOCSHELP_MODEL` / `DOCSHELP_FAST_MODEL` / `DOCSHELP_VISION_MODEL`. Model names change
+often; check your provider's model list if a default is retired. The paid providers are optional and never
+needed. Ollama runs everything for free on your machine. For the tool-heavy later parts (6–7), a free Groq or
+Gemini key gives noticeably better results than a small local model. Free tiers have rate limits, and
+stage 4 makes about 50 calls, so it may run slowly on them.
 
 ### 1. Install uv (one time, Option A only)
 
@@ -180,6 +191,7 @@ Sign up at <https://console.groq.com>, then **API Keys → Create API Key**. No 
 1. Install Ollama from <https://ollama.com/download> and make sure it's running.
 2. Download the models: `ollama pull qwen3:8b` and `ollama pull qwen3:4b` (8 GB+ of free RAM recommended;
    a GPU helps a lot). On a smaller machine, use `qwen3:4b` for both via `DOCSHELP_MODEL`.
+3. For the image lesson (1.4) only: `ollama pull gemma3:4b`.
 
 With Docker (Option B) you can skip installing Ollama: `docker compose --profile ollama up -d ollama`, then
 `docker compose exec ollama ollama pull qwen3:8b` (repeat the pull for `qwen3:4b`). The models are kept in a Docker volume.
@@ -226,7 +238,7 @@ in its terminal.
 Edit `.env`:
 - `DOCSHELP_PROVIDER`: your provider (e.g. `ollama`).
 - The API key for that provider only. The other key lines can stay empty.
-- `LANGSMITH_API_KEY` is **optional but recommended**. With it and `LANGSMITH_TRACING=true`, every stage is
+- `LANGSMITH_API_KEY` is **optional but recommended**. With it and `LANGSMITH_TRACING=true`, every lesson is
   traced automatically with no code changes.
 
 **Keeping keys out of git:** settings are read only from environment variables. `.env` is just a
@@ -239,41 +251,41 @@ You can skip `.env` entirely and set real environment variables instead:
 | `$env:GROQ_API_KEY = "gsk_..."` | `export GROQ_API_KEY=gsk_...` |
 
 Real environment variables take priority over `.env`. Run `uv run poe doctor` at any time to see which providers
-are ready. If a key is missing, the stages exit with a message saying which variable to set and where to get it.
+are ready. If a key is missing, the lessons exit with a message saying which variable to set and where to get it.
 
 Embeddings run locally on your CPU (`BAAI/bge-small-en-v1.5` via fastembed). The first run downloads about 70 MB into `.cache/`.
 
-## Running the stages
+## Running the lessons
 
 | Task | Option A (uv, any shell) | Option B (Docker, any shell) |
 |---|---|---|
-| Stage 1–4 | `uv run poe stage1` … `stage4` | `docker compose run --rm app poe stage1` … `stage4` |
+| List the lessons | `uv run poe lessons` | `docker compose run --rm app poe lessons` |
+| Run a lesson | `uv run poe lesson 1.6` | `docker compose run --rm app poe lesson 1.6` |
+| Stages 3–4 (until Parts 3 and 5 replace them) | `uv run poe stage3` / `stage4` | `docker compose run --rm app poe stage3` / `stage4` |
 | Stage 3, no prompt | `uv run poe stage3 --auto-approve` | `docker compose run --rm app poe stage3 --auto-approve` |
 | Stage 5 server | `uv run poe server` | `docker compose up -d server` |
 | Stage 5 client | `uv run poe stage5` (second terminal) | `docker compose run --rm app poe stage5` |
 | Tests | `uv run poe test` | `docker compose run --rm app poe test` |
 | Provider check | `uv run poe doctor` | `docker compose run --rm app poe doctor` |
 
-The tasks are thin wrappers, so `uv run python stages/01_langchain_basics.py` works too (forward slashes work in every shell).
+Lessons live in `lessons/p<part>_<topic>/<NN>_<topic>.py`. Each one opens with a docstring naming the Academy
+lessons it covers and the concepts it teaches. Each has a `run()` the tests drive with a scripted model and a
+`main()` that wires in your real model. Extra arguments go to the lesson: `uv run poe lesson 1.10 --chat`.
 
-### Stage 1: LangChain basics
-```bash
-uv run poe stage1
-```
-Covers a direct model call, `prompt | llm | parser`, streaming, a support email turned into a validated Pydantic
-object, `batch()`, and swapping to the provider's smaller model with one argument (`get_llm(fast=True)`).
-Swapping the *provider* needs no code change at all: set `DOCSHELP_PROVIDER` and re-run.
-**Look for:** in section 2 the model *guesses* about offline mode, because it hasn't seen the docs yet.
+### Part 1: LangChain essentials
 
-### Stage 2: RAG and a tool-calling agent
-```bash
-uv run poe stage2
-```
-Ingests `data/docs/` (load → split by Markdown headings → embed → store), runs a semantic search, then a RAG chain
-built with LCEL. Finally it runs `create_agent` with two tools, `search_docs` and `quote_price`, on a question that needs both.
-**Look for:** "get my money back" finds the *Refunds* section with no shared keywords. The agent decides on its
-own to call both tools.
-
+| Lesson | What you see | Look for |
+|---|---|---|
+| 1.1 Models and messages | `invoke`, message types, token usage, `batch()`, swapping to the fast model | the model only "remembers" because the history is resent |
+| 1.2 Prompts and LCEL | templates, few-shot examples, `MessagesPlaceholder`, `prompt \| llm \| parser`, `RunnableParallel` | the exact message list the model receives |
+| 1.3 Structured output | a support email turned into a validated `Triage` object, then a whole inbox in one `batch()` | provider-neutral `structured_llm()` |
+| 1.4 Multimodal | a generated error screenshot sent as an image block to a vision model | the model reads the error code from the image |
+| 1.5 RAG | load → split → embed (local) → retrieve → answer with citations | "get my money back" finds *Refunds* with no shared keywords |
+| 1.6 Tools and agents | `@tool` schemas, a tool call by hand, then `create_agent` doing the loop | the agent calls docs search *and* the pricing tool |
+| 1.7 Streaming | tokens from the model; `updates`, `messages` and `custom` streams from the agent | "Searching docs…" progress sent from inside a tool |
+| 1.8 Short-term memory | a checkpointer with one thread per conversation | a second thread knows nothing |
+| 1.9 Dynamic prompt | runtime `context` (the customer's plan) rewrites the system prompt per call | Free vs Enterprise answers to the same question |
+| 1.10 Capstone | the support agent (`src/docshelp/agents.py`): tools + memory + plan-aware prompt + `SupportAnswer` | `sources` and `needs_ticket` as data; `--chat` to talk to it |
 ### Stage 3: LangGraph agent
 ```bash
 uv run poe stage3                   # you approve or reject the ticket
@@ -293,13 +305,13 @@ query and retries if they're irrelevant, and pauses with `interrupt()` before op
 uv run poe stage4
 ```
 Uploads `data/eval_dataset.json` as a LangSmith dataset, then evaluates two systems on it: the plain RAG chain
-(stage 2) and the LangGraph agent (stage 3). There are two evaluators:
+(lesson 1.5) and the LangGraph agent (stage 3). There are two evaluators:
 - an **LLM-as-judge** that checks each answer against the reference answer
 - a **code check** that the right source document was retrieved
 
 **Look for:** in LangSmith → *Datasets & Experiments* → `docshelp-qa`, select both experiments and click **Compare**.
 You'll see per-question scores, latency, token cost, and a link to each full trace.
-Also open *Tracing Projects* → `docshelp-demo` to see traces from stages 1–3.
+Also open *Tracing Projects* → `docshelp-demo` to see traces from the lessons and stages 3–5.
 Without a LangSmith key the script runs the same evaluation locally and prints the scores.
 
 ### Stage 5: LangGraph Server and Studio
@@ -326,11 +338,13 @@ src/docshelp/
     vendors.py          Anthropic, OpenAI, Google Gemini, Groq and Ollama providers
   ingest.py             load → split → embed → InMemoryVectorStore → retriever
   tools.py              search_docs and quote_price tools, save_ticket (writes data/tickets.jsonl)
+  agents.py             the create_agent support agent (Part 1 capstone)
   graph.py              the LangGraph agent (dependencies injectable for tests)
   server.py             graph instance for LangGraph Server
   console.py            UTF-8 terminal output on every OS
-  tasks.py              init-env and doctor helpers behind `poe`
-stages/                 the five runnable walkthroughs
+  tasks.py              init-env, doctor and the lesson runner behind `poe`
+lessons/                the curriculum: p1_langchain/01_models_and_messages.py ... (see CURRICULUM.md)
+stages/                 stages 3-5, kept until Parts 3, 5 and 8 replace them
 tests/                  offline tests: scripted fake LLM + fake embeddings, no keys needed
 langgraph.json          LangGraph Server / Studio config
 pyproject.toml          dependencies, provider extras, and the `poe` task definitions
@@ -350,10 +364,10 @@ uv run poe e2e          # end-to-end, ~2 min
 Both suites run offline with no API keys.
 
 **End-to-end tests** (`tests/e2e/`):
-- Every stage runs as a real process with no keys and must exit with clear setup instructions (no tracebacks).
+- Every lesson and stage runs as a real process with no keys and must exit with clear setup instructions (no tracebacks).
 - A real LangGraph Server serves the real graph (scripted model), and the real stage 5 client drives it through a
   question, the approval interrupt and the resume.
-- With `DOCSHELP_E2E_MODEL` set and Ollama running, all five stages also run against a real local model, still
+- With `DOCSHELP_E2E_MODEL` set and Ollama running, every lesson and stage also runs against a real local model, still
   with no keys:
   ```bash
   ollama pull qwen2.5:0.5b
@@ -366,13 +380,17 @@ builds the image and runs the suites in the container, including the real-model 
 `ollama` service, then checks the compose `server` + stage 5 path.
 
 The unit tests cover:
+- **every lesson:** its `run()` driven by `FakeChatModel` (a scripted `BaseChatModel` that streams and calls tools),
+  checking what the model was sent and what came back
+- **the curriculum:** every lesson listed in `CURRICULUM.md`, every reference real, no "planned" rows left in a
+  shipped part
 - **the graph:** every path (happy path, rewrite-and-retry loop, multi-turn memory, ticket approve/reject through
   `interrupt()` + `Command(resume=...)`)
 - **providers:** key lookup from env, missing-key and missing-package errors, model/fast-model/max-token handling,
   structured-output strategy, registry behaviour
 - **settings:** parsing and validation of every `DOCSHELP_*` variable
 - **repo hygiene:** no machine-specific paths, `.env` git-ignored, `.env.example` documents every provider with empty
-  values, every provider has a pyproject extra, and no stage hard-codes a vendor
+  values, every provider has a pyproject extra, and no lesson or stage hard-codes a vendor or model
 - **portability:**
   - UTF-8 output on non-UTF-8 streams, and the `poe` tasks and helpers
   - Dockerfile uses the lockfile and matching Python version; `.dockerignore` keeps secrets out
@@ -443,8 +461,5 @@ it's just as useful for humans. `CLAUDE.md` points Claude Code at it.
   (and costs nothing) everywhere.
 - `InMemorySaver` / `InMemoryVectorStore` keep the demo dependency-free. For production, swap in
   `langgraph-checkpoint-postgres` and a persistent vector store; the rest of the code doesn't change.
-- Ideas to extend it:
-  - load tools from an MCP server with `langchain-mcp-adapters`
-  - try LangChain's `deepagents` for planning and sub-agents
-  - add `HumanInTheLoopMiddleware` or `SummarizationMiddleware` to the stage 2 agent
-  - deploy with `langgraph build` / LangSmith Deployment
+- What's next is in [CURRICULUM.md](CURRICULUM.md): MCP, middleware and human-in-the-loop (Part 2), Deep Agents
+  (Part 7), deployment with auth (Part 8), and production monitoring (Part 9).

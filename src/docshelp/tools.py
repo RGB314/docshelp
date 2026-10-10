@@ -11,7 +11,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Literal
 
-from langchain_core.tools import tool
+from langchain_core.retrievers import BaseRetriever
+from langchain_core.tools import BaseTool, tool
 
 from docshelp.config import DATA_DIR
 from docshelp.ingest import format_docs, get_retriever
@@ -19,10 +20,18 @@ from docshelp.ingest import format_docs, get_retriever
 TICKETS_PATH = DATA_DIR / "tickets.jsonl"
 
 
-@tool
-def search_docs(query: str) -> str:
-    """Search the Nimbus Notes product documentation. Use this for any question about the product."""
-    return format_docs(get_retriever().invoke(query))
+def make_search_docs(retriever: BaseRetriever | None = None) -> BaseTool:
+    """Build the `search_docs` tool over a given retriever (tests pass one with fake embeddings)."""
+
+    @tool
+    def search_docs(query: str) -> str:
+        """Search the Nimbus Notes product documentation. Use this for any question about the product."""
+        return format_docs((retriever or get_retriever()).invoke(query))
+
+    return search_docs
+
+
+search_docs = make_search_docs()  # uses the real retriever, built on first call
 
 
 @tool

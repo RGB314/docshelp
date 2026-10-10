@@ -34,9 +34,10 @@ ensure_utf8()
 class Settings:
     """App settings. Build with `Settings.from_env()`; immutable once created."""
 
-    provider: str = "anthropic"
+    provider: str = "ollama"  # free and local; switch with DOCSHELP_PROVIDER
     model: str | None = None  # None = the provider's default model
     fast_model: str | None = None  # None = the provider's smaller model
+    vision_model: str | None = None  # None = the provider's image-capable model
     max_tokens: int = 4096
     embedding_model: str = "BAAI/bge-small-en-v1.5"
 
@@ -56,6 +57,7 @@ class Settings:
             provider=(read("DOCSHELP_PROVIDER") or defaults.provider).lower(),
             model=read("DOCSHELP_MODEL"),
             fast_model=read("DOCSHELP_FAST_MODEL"),
+            vision_model=read("DOCSHELP_VISION_MODEL"),
             max_tokens=int(max_tokens) if max_tokens else defaults.max_tokens,
             embedding_model=read("DOCSHELP_EMBEDDING_MODEL") or defaults.embedding_model,
         )
@@ -70,6 +72,7 @@ def get_llm(
     model: str | None = None,
     *,
     fast: bool = False,
+    vision: bool = False,
     settings: Settings | None = None,
     env: Mapping[str, str] | None = None,
     **kwargs: Any,
@@ -77,12 +80,13 @@ def get_llm(
     """Return a chat model from the configured provider (DOCSHELP_PROVIDER).
 
     Whatever the vendor, the result has the same LangChain interface: `invoke`, `stream`, `batch`,
-    `bind_tools`, `with_structured_output`.
+    `bind_tools`, `with_structured_output`. `fast=True` picks the smaller model, `vision=True` one that
+    accepts images.
     """
     settings = settings or Settings.from_env(env)
-    chosen = model or (settings.fast_model if fast else settings.model)
+    chosen = model or (settings.vision_model if vision else settings.fast_model if fast else settings.model)
     kwargs.setdefault("max_tokens", settings.max_tokens)
-    return get_provider(settings, env).chat_model(chosen, fast=fast, **kwargs)
+    return get_provider(settings, env).chat_model(chosen, fast=fast, vision=vision, **kwargs)
 
 
 def structured_llm(llm: BaseChatModel, schema: type, *, settings: Settings | None = None) -> Any:
@@ -96,13 +100,16 @@ def describe(settings: Settings | None = None, env: Mapping[str, str] | None = N
     return get_provider(settings, env).describe(settings.model)
 
 
-def ensure_llm_ready(settings: Settings | None = None, env: Mapping[str, str] | None = None) -> None:
+def ensure_llm_ready(
+    settings: Settings | None = None, env: Mapping[str, str] | None = None, *, vision: bool = False
+) -> None:
     """Exit with setup instructions if the provider isn't installed, has no API key, or isn't running."""
     settings = settings or Settings.from_env(env)
     provider = get_provider(settings, env)
+    model = (settings.vision_model or provider.vision_model) if vision else settings.model
     try:
         provider.check()
-        provider.check_runtime(settings.model)
+        provider.check_runtime(model)
     except ProviderConfigError as err:
         raise SystemExit(f"{err}\n(Choose a provider with DOCSHELP_PROVIDER in .env; see README.)") from None
 

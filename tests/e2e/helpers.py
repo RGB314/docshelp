@@ -1,4 +1,4 @@
-"""Helpers for end-to-end tests: run stages as real processes, start a real LangGraph Server."""
+"""Helpers for end-to-end tests: run lessons and stages as real processes, start a real LangGraph Server."""
 
 from __future__ import annotations
 
@@ -37,8 +37,18 @@ def base_env(**overrides: str) -> dict[str, str]:
 
 
 def run_stage(script: str, env: Mapping[str, str], *args: str, timeout: int = 180) -> subprocess.CompletedProcess:
+    return _run([sys.executable, str(STAGES / script), *args], env, timeout)
+
+
+def run_lesson(code: str, env: Mapping[str, str], *args: str, timeout: int = 180) -> subprocess.CompletedProcess:
+    """Run a lesson exactly as a learner does: through the `poe lesson` runner, in a fresh process."""
+    runner = "import sys; from docshelp.tasks import lesson_main; lesson_main(sys.argv[1:])"
+    return _run([sys.executable, "-c", runner, code, *args], env, timeout)
+
+
+def _run(command: list[str], env: Mapping[str, str], timeout: int) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [sys.executable, str(STAGES / script), *args],
+        command,
         cwd=ROOT,
         env=dict(env),
         capture_output=True,

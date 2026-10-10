@@ -18,6 +18,7 @@ class AnthropicProvider(LLMProvider):
     api_key_envs = ("ANTHROPIC_API_KEY",)
     default_model = "claude-sonnet-5"
     fast_model = "claude-haiku-4-5"
+    vision_model = default_model
     signup_url = "https://console.anthropic.com/settings/keys"
 
     def _create(self, model: str, max_tokens: int, **kwargs: Any) -> BaseChatModel:
@@ -35,6 +36,7 @@ class OpenAIProvider(LLMProvider):
     api_key_envs = ("OPENAI_API_KEY",)
     default_model = "gpt-5.4-mini"
     fast_model = "gpt-5-mini"
+    vision_model = default_model
     signup_url = "https://platform.openai.com/api-keys"
 
     def _create(self, model: str, max_tokens: int, **kwargs: Any) -> BaseChatModel:
@@ -52,6 +54,7 @@ class GoogleProvider(LLMProvider):
     api_key_envs = ("GOOGLE_API_KEY", "GEMINI_API_KEY")
     default_model = "gemini-3.8-flash"
     fast_model = "gemini-3.5-flash-lite"
+    vision_model = default_model
     signup_url = "https://aistudio.google.com/apikey"
 
     def _create(self, model: str, max_tokens: int, **kwargs: Any) -> BaseChatModel:
@@ -69,6 +72,7 @@ class GroqProvider(LLMProvider):
     api_key_envs = ("GROQ_API_KEY",)
     default_model = "openai/gpt-oss-120b"
     fast_model = "openai/gpt-oss-20b"
+    vision_model = "meta-llama/llama-4-scout-17b-16e-instruct"  # the gpt-oss models are text-only
     signup_url = "https://console.groq.com/keys"
     # Groq supports native JSON-schema output on only some models; tool calling works on all of them.
     structured_output_method = "function_calling"
@@ -90,6 +94,7 @@ class OllamaProvider(LLMProvider):
     api_key_envs = ()
     default_model = "qwen3:8b"
     fast_model = "qwen3:4b"
+    vision_model = "gemma3:4b"  # qwen3 is text-only
     signup_url = "https://ollama.com/download"
 
     def base_url(self) -> str:

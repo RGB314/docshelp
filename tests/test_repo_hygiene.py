@@ -108,10 +108,16 @@ def test_license_is_declared():
     assert project["license"] == "Apache-2.0"
 
 
-@pytest.mark.parametrize(
-    "path", sorted((ROOT / "stages").glob("*.py")) + [ROOT / "src" / "docshelp" / "graph.py"], ids=lambda p: p.name
-)
+APP_CODE = [
+    *sorted((ROOT / "lessons").glob("p*/*.py")),
+    *sorted((ROOT / "stages").glob("*.py")),
+    ROOT / "src" / "docshelp" / "graph.py",
+    ROOT / "src" / "docshelp" / "agents.py",
+]
+
+
+@pytest.mark.parametrize("path", APP_CODE, ids=lambda p: p.name)
 def test_app_code_is_provider_neutral(path):
     source = path.read_text(encoding="utf-8")
-    for forbidden in ("require_anthropic_key", "anthropic:", 'method="json_schema"', "claude-"):
+    for forbidden in ("require_anthropic_key", "anthropic:", 'method="json_schema"', "claude-", "qwen", "gemma", "gpt-"):
         assert forbidden not in source, f"{path.name} hard-codes {forbidden!r}"

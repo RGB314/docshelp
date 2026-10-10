@@ -10,7 +10,7 @@ from docshelp.providers import ProviderConfigError
 
 def test_defaults_when_env_is_empty():
     s = Settings.from_env({})
-    assert s.provider == "anthropic"
+    assert s.provider == "ollama"  # free and local: no key, no account
     assert s.model is None
     assert s.fast_model is None
     assert s.max_tokens == 4096
@@ -38,7 +38,7 @@ def test_values_are_read_and_normalised_from_env():
 
 def test_blank_values_fall_back_to_defaults():
     s = Settings.from_env({"DOCSHELP_PROVIDER": "", "DOCSHELP_MODEL": "  "})
-    assert s.provider == "anthropic"
+    assert s.provider == "ollama"
     assert s.model is None
 
 
@@ -63,6 +63,16 @@ def test_get_llm_fast_uses_fast_model_override_or_provider_default():
     assert config.get_llm(fast=True, settings=s, env={}).model == "tiny"
     s = Settings(provider="ollama")
     assert config.get_llm(fast=True, settings=s, env={}).model == config.get_provider(s, env={}).fast_model
+
+
+def test_get_llm_vision_uses_override_or_provider_vision_model():
+    assert config.get_llm(vision=True, settings=Settings(provider="ollama", vision_model="see"), env={}).model == "see"
+    s = Settings(provider="ollama")
+    assert config.get_llm(vision=True, settings=s, env={}).model == config.get_provider(s, env={}).vision_model
+
+
+def test_vision_model_is_read_from_env():
+    assert Settings.from_env({"DOCSHELP_VISION_MODEL": " llava "}).vision_model == "llava"
 
 
 def test_get_llm_passes_max_tokens_from_settings():
