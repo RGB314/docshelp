@@ -18,7 +18,7 @@ with self-check questions.
 | 3 | **LangGraph core:** state, reducers, schemas, message management, persistence, streaming, interrupts, time travel, Studio | `uv run poe lesson 3.1` … `3.15` | ✅ |
 | 4 | **LangGraph at scale + long-term memory:** parallelism, subgraphs, map-reduce, a research assistant, the Store, memory schemas | `uv run poe lesson 4.1` … `4.9` | ✅ |
 | 5 | **LangSmith:** tracing, datasets, evaluators, experiments, pairwise, evals as tests, prompts, feedback, annotation | `uv run poe lesson 5.1` … `5.12` | ✅ |
-| 6 | **Agent projects:** an ambient support-inbox agent and a deep-research agent | (planned) | |
+| 6 | **Agent projects:** an ambient support-inbox agent (triage, Agent Inbox, learning memory, evals) and a deep-research agent (scoping, parallel researchers, MCP, reports) | `uv run poe lesson 6.1` … `6.9` | ✅ |
 | 7 | **Deep Agents:** planning, filesystems, sandboxes, skills, memory, subagents | (planned) | |
 | 8 | **Deployment:** LangGraph Server, SDK, assistants, double texting, custom routes, auth, Chat UI | `uv run poe stage5` for now | |
 | 9 | **Production:** cost, quality and security monitoring, online evals, the improvement loop | (planned) | |
@@ -45,6 +45,7 @@ The stages that predate the curriculum (4–5) keep working until their parts re
   - [Part 3: LangGraph core](#part-3-langgraph-core)
   - [Part 4: LangGraph at scale and long-term memory](#part-4-langgraph-at-scale-and-long-term-memory)
   - [Part 5: LangSmith observability and evaluation](#part-5-langsmith-observability-and-evaluation)
+  - [Part 6: Agent projects (ambient inbox and deep research)](#part-6-agent-projects-ambient-inbox-and-deep-research)
   - [Stage 5: LangGraph Server and Studio](#stage-5-langgraph-server-and-studio)
 - [Project layout](#project-layout)
 - [Tests](#tests)
@@ -358,6 +359,20 @@ LangSmith UI.
 | 5.11 User feedback | 👍/👎 attached to the exact run that was rated (`--rate` to rate yourself) | feedback joined to traces |
 | 5.12 Annotation queues | uncited answers queued for review; corrections become dataset examples (`--review`) | the loop from mistake to test case |
 
+### Part 6: Agent projects (ambient inbox and deep research)
+
+| Lesson | What you see | Look for |
+|---|---|---|
+| 6.1 Ambient inbox agent | the 8 emails in `data/inbox/` triaged and answered on their own (`src/docshelp/ambient.py`) | newsletters and auto-replies never reach the response agent |
+| 6.2 Ambient evaluations | triage accuracy on every email; tool calls and per-email success criteria on the replies | where the agent errs, not just how often |
+| 6.3 Human in the loop | Agent Inbox requests: accept / edit / respond / ignore (`--interactive` to decide) | a rejected draft is never sent; the edited ticket priority is |
+| 6.4 Memory | triage and reply preferences learned from the lead's edits and ignores | the learned sign-off appears in later replies |
+| 6.5 Research scoping | a clarifying question, then a research brief | the run *ends* with the question; the answer continues the thread |
+| 6.6 Research agent | search, `think`, search again, then compressed and cited findings (`--web` adds web search) | the reflections between searches |
+| 6.7 Research agent with MCP | the same agent reading `data/docs/` through an MCP server (`src/docshelp/docs_mcp_server.py`) | only the tools changed |
+| 6.8 Research supervisor | parallel researchers delegated with `ConductResearch`, within limits | one turn starts several researchers at once |
+| 6.9 Capstone | request → scoping → parallel research → report in `data/reports/`, graded by an LLM judge | a cited report and its quality score |
+
 ### Stage 5: LangGraph Server and Studio
 ```bash
 uv run poe server       # terminal 1: API on :2024, opens Studio in your browser
@@ -377,6 +392,7 @@ data/docs/              8 short Markdown pages documenting the made-up product
 data/eval_dataset.json  9 question / reference-answer / expected-source examples
 data/changelog.md       release notes; data/sample_tickets.jsonl: past tickets (Part 4)
 data/triage_dataset.json  support emails labelled needs_ticket (lesson 5.8)
+data/inbox/             the support inbox for the ambient agent, with evaluation labels (Part 6)
 src/docshelp/
   config.py             Settings (from env vars), get_llm / structured_llm facades, local fastembed embeddings
   providers/
@@ -398,6 +414,9 @@ src/docshelp/
   observability.py      tracing (LangSmith or local), trace log, feedback (Part 5)
   evals.py              datasets, targets, evaluators, experiments, pairwise judge (Part 5)
   prompts.py            versioned prompts: LangSmith Prompt Hub or a local twin (Part 5)
+  ambient.py            the ambient support-inbox agent, Agent Inbox protocol, learned preferences (Part 6)
+  deep_research.py      scoping, researcher, supervisor and the full deep-research system (Part 6)
+  docs_mcp_server.py    an MCP server exposing data/docs/ as files (lesson 6.7)
   graph.py              the LangGraph support graph, Part 3 capstone (dependencies injectable)
   server.py             graphs served by LangGraph Server / Studio
   console.py            UTF-8 terminal output on every OS
@@ -521,5 +540,4 @@ it's just as useful for humans. `CLAUDE.md` points Claude Code at it.
   (and costs nothing) everywhere.
 - `InMemorySaver` / `InMemoryVectorStore` keep the demo dependency-free. For production, swap in
   `langgraph-checkpoint-postgres` and a persistent vector store; the rest of the code doesn't change.
-- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): ambient and deep-research
-  agents (Part 6), Deep Agents (Part 7), deployment with auth (Part 8), and production monitoring (Part 9).
+- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): Deep Agents (Part 7), deployment with auth (Part 8), and production monitoring (Part 9).

@@ -1,0 +1,11 @@
+{
+  "id": "msg-002",
+  "from": "news@saasweekly.example",
+  "subject": "Top 10 productivity tools this week",
+  "body": "This week's roundup: ten tools to boost your team's productivity. Unsubscribe any time.",
+  "eval": {
+    "triage": "ignore",
+    "tools": [],
+    "criteria": ""
+  }
+}

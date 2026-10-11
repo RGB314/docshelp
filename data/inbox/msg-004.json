@@ -1,0 +1,13 @@
+{
+  "id": "msg-004",
+  "from": "sam@student.example",
+  "subject": "Export to PDF?",
+  "body": "Hello, how do I export a whole notebook as a PDF? Thanks, Sam",
+  "eval": {
+    "triage": "respond",
+    "tools": [
+      "send_reply"
+    ],
+    "criteria": "Explains how to export a notebook as PDF, based on the docs."
+  }
+}

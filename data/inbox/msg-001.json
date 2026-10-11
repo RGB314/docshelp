@@ -1,0 +1,13 @@
+{
+  "id": "msg-001",
+  "from": "ada@acme.example",
+  "subject": "Red slash on the sync icon after sleep",
+  "body": "Hi, since updating to 4.12 my Windows laptop shows a red slash on the Nimbus tray icon every morning after it wakes from sleep. Are my notes syncing? Ada",
+  "eval": {
+    "triage": "respond",
+    "tools": [
+      "send_reply"
+    ],
+    "criteria": "Says this is a known 4.12 issue on Windows after sleep, that sync still works, and that a fix is planned for 4.12.1."
+  }
+}

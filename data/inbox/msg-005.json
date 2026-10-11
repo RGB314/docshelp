@@ -1,0 +1,11 @@
+{
+  "id": "msg-005",
+  "from": "billing-alerts@nimbusnotes.example",
+  "subject": "Payment failed: acct-2002",
+  "body": "Automatic notice: the card payment for account acct-2002 (Globex) failed on 2026-10-09. Retry scheduled in 3 days.",
+  "eval": {
+    "triage": "notify",
+    "tools": [],
+    "criteria": ""
+  }
+}
