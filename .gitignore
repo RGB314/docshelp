@@ -32,3 +32,6 @@ graph.mmd
 .vscode/
 .idea/
 data/monitoring/
+# The generated website (uv run poe site)
+.site-src/
+.site/

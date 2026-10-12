@@ -43,6 +43,8 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "mkdocs>=1.6,<2",  # MkDocs 2.0 drops the plugin and theme system Material needs
+    "mkdocs-material>=9.6.0",
     "poethepoet>=0.48.0",
     "pytest>=9.1.1",
 ]
@@ -77,6 +79,8 @@ e2e = { cmd = "pytest -m e2e", help = "End-to-end tests: lessons as processes + 
 lessons = { script = "docshelp.tasks:lessons_main", help = "List every lesson in curriculum order" }
 lesson = { script = "docshelp.tasks:lesson_main", help = "Run one lesson: uv run poe lesson 1.6 (extra args are passed on)" }
 evals = { cmd = "pytest evals -p no:cacheprovider", help = "DocsHelp evals against your real model (LangSmith-tracked if configured; see lesson 5.9)" }
+site = { script = "docshelp.site:build_main", help = "Build the project website into .site/ (GitHub Pages; see src/docshelp/site.py)" }
+site-serve = { script = "docshelp.site:serve_main", help = "Preview the project website at http://127.0.0.1:8000" }
 maintenance = { script = "docshelp.maintenance:main", help = "Periodic health report: Academy catalogue, dependency updates, CI hangs (see MAINTENANCE.md)" }
 dashboard = { script = "docshelp.dashboard:main", help = "Write the monitoring dashboard to data/reports/dashboard.html (Part 9)" }
 server = { cmd = "langgraph dev", help = "LangGraph Server + Studio on http://127.0.0.1:2024 (Part 8)" }
