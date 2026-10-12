@@ -6,6 +6,7 @@ Opt-in (it needs Ollama and a pulled model), e.g.:
 CI runs this inside Docker Compose with the `ollama` service.
 
 Small models give weak answers; these tests check that everything runs to completion, not answer quality.
+`DOCSHELP_E2E_PARTS=7,9` runs only those parts' lessons: CI splits the real-model run into parallel shards.
 Part 8's lessons are clients, so they run against this repo's own servers (`langgraph.json`, then
 `langgraph.auth.json`), started here with the real model.
 """
@@ -40,7 +41,15 @@ def ollama_env():
     )
 
 
-LESSONS = [code for code, _ in find_lessons()]
+PARTS = {part.strip() for part in os.getenv("DOCSHELP_E2E_PARTS", "").split(",") if part.strip()}
+
+
+def selected(part: str) -> bool:
+    """Is this part in the run? (No DOCSHELP_E2E_PARTS: every part.)"""
+    return not PARTS or part in PARTS
+
+
+LESSONS = [code for code, _ in find_lessons() if selected(code.split(".")[0])]
 # Lesson 1.4 needs an image-capable model, which the tiny CI model is not. Part 8 needs a server (below).
 STANDALONE_LESSONS = [code for code in LESSONS if code != "1.4" and not code.startswith("8.")]
 SERVER_LESSONS = [code for code in LESSONS if code.startswith("8.") and code != "8.10"]
@@ -54,6 +63,7 @@ def test_lesson_runs_to_completion(ollama_env, code):
 
 
 @requires_ollama
+@pytest.mark.skipif(not selected("5"), reason="the evals belong to Part 5, which isn't in DOCSHELP_E2E_PARTS")
 def test_evals_run_against_the_real_model(ollama_env):
     result = run_evals(ollama_env, timeout=1500)
     # A tiny model may fail an eval; what matters is that the suite runs and reports (exit 0 or 1, not 2+).

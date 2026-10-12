@@ -7,12 +7,13 @@ repo folder, where `langgraph dev` keeps its local persistence (`.langgraph_api/
 import pytest
 
 from .helpers import ROOT, langgraph_server, run_lesson
-from .test_real_model import ollama_env, requires_ollama  # noqa: F401 - a fixture, used by name
+from .test_real_model import ollama_env, requires_ollama, selected  # noqa: F401 - a fixture, used by name
 
 pytestmark = pytest.mark.e2e
 
 
 @requires_ollama
+@pytest.mark.skipif(not selected("8"), reason="Part 8 isn't in DOCSHELP_E2E_PARTS")
 def test_auth_lesson_against_the_real_auth_server(ollama_env):  # noqa: F811
     with langgraph_server(ROOT, ollama_env, startup_timeout=300, config="langgraph.auth.json") as url:
         result = run_lesson("8.10", {**ollama_env, "LANGGRAPH_AUTH_URL": url}, timeout=1500)

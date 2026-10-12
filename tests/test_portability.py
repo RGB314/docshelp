@@ -79,7 +79,7 @@ def test_ci_runs_the_suites_natively_on_all_three_operating_systems():
 
 
 def test_ci_runs_docker_e2e_with_a_real_local_model():
-    job = workflow()["jobs"]["docker-e2e"]
+    job = workflow()["jobs"]["docker-e2e-shard"]
     steps = " ".join(str(step.get("run", "")) for step in job["steps"])
     assert "docker compose build" in steps
     assert "--profile ollama" in steps
@@ -87,6 +87,18 @@ def test_ci_runs_docker_e2e_with_a_real_local_model():
     assert "poe e2e" in steps
     assert "up -d --wait server server-auth" in steps
     assert "poe lesson 8.3" in steps and "poe lesson 8.10" in steps  # Part 8 clients over the compose network
+
+
+def test_docker_e2e_shards_cover_every_part_once_behind_one_required_check():
+    from docshelp.tasks import find_lessons
+
+    jobs = workflow()["jobs"]
+    shards = jobs["docker-e2e-shard"]["strategy"]["matrix"]["include"]
+    parts = [part for shard in shards for part in shard["parts"].split(",")]
+    assert sorted(parts) == sorted({code.split(".")[0] for code, _ in find_lessons()})  # each part exactly once
+    assert sum(bool(shard.get("full")) for shard in shards) == 1  # unit, keyless and compose checks run once
+    gate = jobs["docker-e2e"]  # the name branch protection requires
+    assert gate["needs"] == "docker-e2e-shard" and gate["if"] == "always()"
 
 
 def test_ci_triggers_on_pull_requests_to_main():

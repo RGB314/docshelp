@@ -77,6 +77,7 @@ e2e = { cmd = "pytest -m e2e", help = "End-to-end tests: lessons as processes + 
 lessons = { script = "docshelp.tasks:lessons_main", help = "List every lesson in curriculum order" }
 lesson = { script = "docshelp.tasks:lesson_main", help = "Run one lesson: uv run poe lesson 1.6 (extra args are passed on)" }
 evals = { cmd = "pytest evals -p no:cacheprovider", help = "DocsHelp evals against your real model (LangSmith-tracked if configured; see lesson 5.9)" }
+maintenance = { script = "docshelp.maintenance:main", help = "Periodic health report: Academy catalogue, dependency updates, CI hangs (see MAINTENANCE.md)" }
 dashboard = { script = "docshelp.dashboard:main", help = "Write the monitoring dashboard to data/reports/dashboard.html (Part 9)" }
 server = { cmd = "langgraph dev", help = "LangGraph Server + Studio on http://127.0.0.1:2024 (Part 8)" }
 server-auth = { cmd = "langgraph dev --config langgraph.auth.json --port 2025", help = "The same server with auth, on http://127.0.0.1:2025 (lesson 8.10)" }

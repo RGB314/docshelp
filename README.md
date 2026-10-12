@@ -1,6 +1,6 @@
 # DocsHelp: the LangChain ecosystem, one lesson at a time
 
-[![CI](https://github.com/RGB314/docshelp/actions/workflows/ci.yml/badge.svg)](https://github.com/RGB314/docshelp/actions/workflows/ci.yml)
+[![CI](https://github.com/RGB314/docshelp-langchain-curriculum/actions/workflows/ci.yml/badge.svg)](https://github.com/RGB314/docshelp-langchain-curriculum/actions/workflows/ci.yml)
 
 A small but realistic app, a support assistant for the made-up product **Nimbus Notes**, that grows lesson by
 lesson until it covers everything taught in the [LangChain Academy](https://academy.langchain.com/collections)
@@ -86,10 +86,11 @@ flowchart LR
 ```
 
 In one sentence each:
-- **LangChain** is the standard library: models, prompts, retrievers and tools behind common, swappable interfaces.
-- **LangGraph** is the runtime for agents: you define the steps as a graph, and it handles state, persistence, loops and pausing for a human.
-- **LangSmith** is observability and quality: see every step of every run, and measure whether a change made the app better or worse.
-- **LangGraph Server / Studio** is deployment and debugging: turn a graph into a production-style API without writing web code, and inspect it visually.
+- **[LangChain](https://docs.langchain.com/oss/python/langchain/overview)** is the standard library: models, prompts, retrievers and tools behind common, swappable interfaces.
+- **[LangGraph](https://docs.langchain.com/oss/python/langgraph/overview)** is the runtime for agents: you define the steps as a graph, and it handles state, persistence, loops and pausing for a human.
+- **[Deep Agents](https://docs.langchain.com/oss/python/deepagents/overview)** is a harness on top of both for long, multi-step work: planning, a virtual filesystem, subagents, skills and memory.
+- **[LangSmith](https://docs.langchain.com/langsmith/observability)** is observability and quality: see every step of every run, measure whether a change made the app better or worse, and monitor it in production.
+- **[Agent Server](https://docs.langchain.com/langsmith/agent-server)** (LangGraph Server) and **[Studio](https://docs.langchain.com/langsmith/studio)** are deployment and debugging: turn a graph into a production-style API without writing web code, and inspect it visually.
 
 ## Runs the same on Windows, macOS and Linux
 
@@ -447,63 +448,75 @@ to your project, and each lesson names the LangSmith feature it mirrors.
 
 ## Project layout
 
-```
-data/docs/              8 short Markdown pages documenting the made-up product
-data/eval_dataset.json  9 question / reference-answer / expected-source examples
-data/changelog.md       release notes; data/sample_tickets.jsonl: past tickets (Part 4)
-data/triage_dataset.json  support emails labelled needs_ticket (lesson 5.8)
-data/inbox/             the support inbox for the ambient agent, with evaluation labels (Part 6)
-data/logs/              a customer's sync client log (Part 7)
-data/traffic.json       simulated production conversations; data/pricing.json: token prices (Part 9)
-skills/                 deep-agent skills: refund-policy, log-analysis (Part 7)
-agents/                 agent templates, the Fleet twin (lesson 7.15)
-.deepagents/            Deep Agents Code (dcode) project config: memory, skill, subagent, MCP (lesson 7.16)
-src/docshelp/
-  config.py             Settings (from env vars), get_llm / structured_llm facades, local fastembed embeddings
-  providers/
-    base.py             LLMProvider (abstract base) + ProviderRegistry (factory)
-    vendors.py          Anthropic, OpenAI, Google Gemini, Groq and Ollama providers
-  ingest.py             load → split → embed → InMemoryVectorStore → retriever
-  tools.py              search_docs, quote_price, my_account, open_ticket, send_reply (data/*.jsonl)
-  customers.py          Customer runtime context + a stand-in accounts database
-  agents.py             the create_agent support agent (Part 1 capstone)
-  mcp_server.py         the Nimbus Ops MCP server (status tools, resource, prompt)
-  team.py               supervisor + specialist agents (Part 2.3)
-  middleware.py         AuditLog: custom middleware using every hook
-  email_assistant.py    the support email assistant (Part 2 capstone)
-  react.py              a ReAct agent built by hand in LangGraph (Part 3.3)
-  chatbot.py            a self-summarizing chatbot graph (Parts 3.9-3.10)
-  sources.py            changelog, status page and sample tickets as extra sources (Part 4)
-  research.py           the research assistant graph (Part 4.4)
-  memory.py             long-term memory: schemas, trustcall updates, the memory agent (Part 4)
-  observability.py      tracing (LangSmith or local), trace log, feedback (Part 5)
-  evals.py              datasets, targets, evaluators, experiments, pairwise judge (Part 5)
-  prompts.py            versioned prompts: LangSmith Prompt Hub or a local twin (Part 5)
-  ambient.py            the ambient support-inbox agent, Agent Inbox protocol, learned preferences (Part 6)
-  deep_research.py      scoping, researcher, supervisor and the full deep-research system (Part 6)
-  docs_mcp_server.py    an MCP server exposing data/docs/ as files (lesson 6.7)
-  deep.py               Deep Agents: tools, backends, subagent team, local agent server, the Ops analyst (Part 7)
-  agent_templates.py    agents from Markdown templates and dcode project folders (lessons 7.15-7.16)
-  monitoring.py         traffic, trace summaries, filter language, cost, online evaluators, rules, alerts, A/B (Part 9)
-  guardrails.py         PII middleware, trace anonymizer and the prompt-injection guard (lesson 9.6)
-  insights.py, dashboard.py, engine.py   Insights, Dashboards and Engine twins (lessons 9.8-9.11)
-  graph.py              the LangGraph support graph, Part 3 capstone (dependencies injectable)
-  server.py             graphs served by LangGraph Server / Studio (Part 8)
-  deployment.py         the served support agent, the inbox ingest graph, store embeddings, client helpers (Part 8)
-  auth.py               the server's authentication and authorization, and a local token issuer (lesson 8.10)
-  webapp.py, chat.html  custom routes (/health, /tickets) and a chat page at /ui (lessons 8.6, 8.11)
-  console.py            UTF-8 terminal output on every OS
-  tasks.py              init-env, doctor and the lesson runner behind `poe`
-lessons/                the curriculum: p1_langchain/, p2_production_agents/, ... (see CURRICULUM.md)
-evals/                  evals as pytest tests (lesson 5.9; `uv run poe evals`), not part of `poe test`
-tests/                  offline tests: scripted fake LLM + fake embeddings, no keys needed
-langgraph.json          LangGraph Server / Studio config; langgraph.auth.json adds auth (lesson 8.10)
-pyproject.toml          dependencies, provider extras, and the `poe` task definitions
-Dockerfile              container image (uv + locked deps + pre-downloaded embedding model)
-compose.yaml            app, server, server-auth and optional ollama services
-.devcontainer/          VS Code Dev Container / GitHub Codespaces config
-.gitattributes          LF line endings on every OS
-```
+**Data and agent configuration**
+
+| Path | What it is |
+|---|---|
+| [`data/docs/`](data/docs/) | 8 short Markdown pages documenting the made-up product |
+| [`data/eval_dataset.json`](data/eval_dataset.json) | 9 question / reference-answer / expected-source examples (Part 5) |
+| [`data/changelog.md`](data/changelog.md), [`data/sample_tickets.jsonl`](data/sample_tickets.jsonl) | release notes and past tickets (Part 4) |
+| [`data/triage_dataset.json`](data/triage_dataset.json) | support emails labelled `needs_ticket` (lesson 5.8) |
+| [`data/inbox/`](data/inbox/) | the support inbox for the ambient agent, with evaluation labels (Part 6) |
+| [`data/logs/`](data/logs/) | a customer's sync client log (Part 7) |
+| [`data/traffic.json`](data/traffic.json), [`data/pricing.json`](data/pricing.json) | simulated production conversations and token prices (Part 9) |
+| [`skills/`](skills/) | deep-agent skills: refund-policy, log-analysis (Part 7) |
+| [`agents/`](agents/) | agent templates, the Fleet twin (lesson 7.15) |
+| [`.deepagents/`](.deepagents/) | Deep Agents Code (dcode) project config: memory, skill, subagent, MCP (lesson 7.16) |
+
+**App code (`src/docshelp/`)**
+
+| Path | What it is |
+|---|---|
+| [`src/docshelp/config.py`](src/docshelp/config.py) | `Settings` (from env vars), `get_llm` / `structured_llm` facades, local fastembed embeddings |
+| [`src/docshelp/providers/base.py`](src/docshelp/providers/base.py) | `LLMProvider` (abstract base) and `ProviderRegistry` (factory) |
+| [`src/docshelp/providers/vendors.py`](src/docshelp/providers/vendors.py) | Anthropic, OpenAI, Google Gemini, Groq and Ollama providers |
+| [`src/docshelp/ingest.py`](src/docshelp/ingest.py) | load → split → embed → `InMemoryVectorStore` → retriever |
+| [`src/docshelp/tools.py`](src/docshelp/tools.py) | `search_docs`, `quote_price`, `my_account`, `open_ticket`, `send_reply` |
+| [`src/docshelp/customers.py`](src/docshelp/customers.py) | the `Customer` runtime context and a stand-in accounts database |
+| [`src/docshelp/agents.py`](src/docshelp/agents.py) | the `create_agent` support agent (Part 1 capstone) |
+| [`src/docshelp/mcp_server.py`](src/docshelp/mcp_server.py) | the Nimbus Ops MCP server: status tools, a resource and a prompt (Part 2) |
+| [`src/docshelp/team.py`](src/docshelp/team.py) | supervisor and specialist agents (lesson 2.3) |
+| [`src/docshelp/middleware.py`](src/docshelp/middleware.py) | `AuditLog`: custom middleware using every hook (Part 2) |
+| [`src/docshelp/email_assistant.py`](src/docshelp/email_assistant.py) | the support email assistant (Part 2 capstone) |
+| [`src/docshelp/react.py`](src/docshelp/react.py) | a ReAct agent built by hand in LangGraph (lesson 3.3) |
+| [`src/docshelp/chatbot.py`](src/docshelp/chatbot.py) | a self-summarizing chatbot graph (lessons 3.9-3.10) |
+| [`src/docshelp/graph.py`](src/docshelp/graph.py) | the LangGraph support graph, Part 3 capstone (dependencies injectable) |
+| [`src/docshelp/sources.py`](src/docshelp/sources.py) | changelog, status page and sample tickets as extra sources (Part 4) |
+| [`src/docshelp/research.py`](src/docshelp/research.py) | the research assistant graph (lesson 4.4) |
+| [`src/docshelp/memory.py`](src/docshelp/memory.py) | long-term memory: schemas, trustcall updates, the memory agent (Part 4) |
+| [`src/docshelp/observability.py`](src/docshelp/observability.py) | tracing (LangSmith or local), the trace log, feedback (Part 5) |
+| [`src/docshelp/evals.py`](src/docshelp/evals.py) | datasets, targets, evaluators, experiments, the pairwise judge (Part 5) |
+| [`src/docshelp/prompts.py`](src/docshelp/prompts.py) | versioned prompts: LangSmith Prompt Hub or a local twin (Part 5) |
+| [`src/docshelp/ambient.py`](src/docshelp/ambient.py) | the ambient support-inbox agent, Agent Inbox protocol, learned preferences (Part 6) |
+| [`src/docshelp/deep_research.py`](src/docshelp/deep_research.py) | scoping, researcher, supervisor and the full deep-research system (Part 6) |
+| [`src/docshelp/docs_mcp_server.py`](src/docshelp/docs_mcp_server.py) | an MCP server exposing `data/docs/` as files (lesson 6.7) |
+| [`src/docshelp/deep.py`](src/docshelp/deep.py) | Deep Agents: tools, backends, subagent team, local agent server, the Ops analyst (Part 7) |
+| [`src/docshelp/agent_templates.py`](src/docshelp/agent_templates.py) | agents from Markdown templates and dcode project folders (lessons 7.15-7.16) |
+| [`src/docshelp/server.py`](src/docshelp/server.py) | the graphs served by Agent Server / Studio (Part 8) |
+| [`src/docshelp/deployment.py`](src/docshelp/deployment.py) | the served support agent, the inbox ingest graph, store embeddings, client helpers (Part 8) |
+| [`src/docshelp/auth.py`](src/docshelp/auth.py) | the server's authentication and authorization, and a local token issuer (lesson 8.10) |
+| [`src/docshelp/webapp.py`](src/docshelp/webapp.py), [`src/docshelp/chat.html`](src/docshelp/chat.html) | custom routes (`/health`, `/tickets`) and a chat page at `/ui` (lessons 8.6, 8.11) |
+| [`src/docshelp/monitoring.py`](src/docshelp/monitoring.py) | traffic, trace summaries, filter language, cost, online evaluators, rules, alerts, A/B (Part 9) |
+| [`src/docshelp/guardrails.py`](src/docshelp/guardrails.py) | PII middleware, trace anonymizer and the prompt-injection guard (lesson 9.6) |
+| [`src/docshelp/insights.py`](src/docshelp/insights.py), [`src/docshelp/dashboard.py`](src/docshelp/dashboard.py), [`src/docshelp/engine.py`](src/docshelp/engine.py) | the Insights, Dashboards and Engine twins (lessons 9.8-9.11) |
+| [`src/docshelp/console.py`](src/docshelp/console.py) | UTF-8 terminal output on every OS |
+| [`src/docshelp/tasks.py`](src/docshelp/tasks.py) | `init-env`, `doctor` and the lesson runner behind `poe` |
+| [`src/docshelp/maintenance.py`](src/docshelp/maintenance.py) | `uv run poe maintenance`: the periodic health report ([MAINTENANCE.md](MAINTENANCE.md)) |
+
+**Curriculum, tests and project files**
+
+| Path | What it is |
+|---|---|
+| [`lessons/`](lessons/) | the curriculum: `p1_langchain/` ... `p9_monitoring/` (see [CURRICULUM.md](CURRICULUM.md)) |
+| [`evals/`](evals/) | evals as pytest tests (lesson 5.9; `uv run poe evals`), not part of `poe test` |
+| [`tests/`](tests/) | offline tests: scripted fake LLM and fake embeddings, no keys needed; `tests/e2e/` runs lessons as processes |
+| [`langgraph.json`](langgraph.json), [`langgraph.auth.json`](langgraph.auth.json) | Agent Server / Studio config, and the same with auth (lesson 8.10) |
+| [`pyproject.toml`](pyproject.toml) | dependencies, provider extras, and the `poe` task definitions |
+| [`Dockerfile`](Dockerfile), [`compose.yaml`](compose.yaml) | the container image, and the app, server, server-auth and optional ollama services |
+| [`.devcontainer/`](.devcontainer/) | VS Code Dev Container / GitHub Codespaces config |
+| [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | CI: tests on three OSes, and every lesson against a real local model in Docker |
+| [`MAINTENANCE.md`](MAINTENANCE.md), [`.claude/skills/maintain-curriculum/SKILL.md`](.claude/skills/maintain-curriculum/SKILL.md) | the periodic maintenance routine, and the Claude Code skill that runs it |
+| [`.gitattributes`](.gitattributes) | LF line endings on every OS |
 
 ## Tests
 
@@ -527,9 +540,12 @@ Both suites run offline with no API keys.
   DOCSHELP_E2E_MODEL=qwen2.5:0.5b uv run poe e2e
   ```
 
-**CI** (`.github/workflows/ci.yml`) runs both suites natively on Ubuntu, Windows and macOS. A `docker-e2e` job
-builds the image and runs the suites in the container, including the real-model lessons against the compose
-`ollama` service, then runs lessons 8.3 and 8.10 against the compose `server` and `server-auth` services.
+**CI** (`.github/workflows/ci.yml`) runs both suites natively on Ubuntu, Windows and macOS. In Docker, it runs
+every lesson against a real local model (the compose `ollama` service). That takes about 45 minutes in one job, so
+it's split by part into four parallel shards (`DOCSHELP_E2E_PARTS`), of about 15 minutes each. One shard also runs
+the unit tests in the container and lessons 8.3 and 8.10 against the compose `server` and `server-auth` services.
+The `docker-e2e` check passes when every shard does. To run some parts locally:
+`DOCSHELP_E2E_PARTS=7,9 DOCSHELP_E2E_MODEL=qwen2.5:0.5b uv run poe e2e`.
 
 The unit tests cover:
 - **every lesson:** its `run()` driven by `FakeChatModel` (a scripted `BaseChatModel` that streams and calls tools),

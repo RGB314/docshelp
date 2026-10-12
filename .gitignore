@@ -28,6 +28,7 @@ graph.mmd
 # ignore them all, but keep team-shared config such as .claude/settings.json committable.
 .claude/*
 !.claude/settings.json
+!.claude/skills/
 .vscode/
 .idea/
 data/monitoring/
