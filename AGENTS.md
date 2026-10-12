@@ -29,6 +29,7 @@ Every command works the same in PowerShell, cmd, Git Bash, macOS and Linux. Don'
 | List / run lessons | `uv run poe lessons`, `uv run poe lesson 1.6` (extra args are passed to the lesson) |
 | Evals against a real model (not offline) | `uv run poe evals` (lesson 5.9) |
 | LangGraph Server for Part 8 | `uv run poe server` (:2024); with auth: `uv run poe server-auth` (:2025) |
+| Monitoring dashboard (Part 9) | `uv run poe dashboard` (writes `data/reports/dashboard.html`) |
 | Docker equivalents | `docker compose build`, then `docker compose run --rm app poe <task>` |
 
 Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both must pass.
@@ -59,6 +60,9 @@ Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both mu
   store embeddings; the server's auth handlers; custom routes. `langgraph.json` and `langgraph.auth.json` must stay
   identical apart from `auth` (a test checks). Graphs on the server get no checkpointer or store (the server's are
   used), and code that runs on the server must not block its event loop (use `asyncio.to_thread`).
+- `src/docshelp/{monitoring,guardrails,insights,engine,dashboard}.py`: Part 9's production monitoring. Lessons log
+  to `data/monitoring/` (git-ignored) and take `path=`/`feedback_path=` so tests use temp files. Online evaluators,
+  insights and the engine must survive a judge's invalid output (skip it, never crash the lesson).
 - `src/docshelp/{ingest,tools,console,tasks,server}.py`: RAG pipeline, tools, UTF-8 output, `poe` helpers
   (including the lesson runner), and the LangGraph Server entry point.
 - `lessons/p<part>_<topic>/<NN>_<topic>.py`: the curriculum. Part 8's lessons are SDK clients: `run(client, ...)`.

@@ -1,0 +1,10 @@
+{
+  "_note": "USD per 1 million tokens. 'models' prices the model names your traces report (ls_model_name, exact or prefix match); local Ollama models are free, so they're absent and cost 0. Add your hosted model here with the rates from its provider's pricing page. 'tiers' are illustrative round numbers for 'what would this traffic cost on a hosted model?', not quotes.",
+  "models": {},
+  "tiers": {
+    "local (Ollama)": {"input": 0.0, "output": 0.0},
+    "small hosted model": {"input": 0.10, "output": 0.40},
+    "mid-size hosted model": {"input": 1.00, "output": 4.00},
+    "large hosted model": {"input": 5.00, "output": 25.00}
+  }
+}

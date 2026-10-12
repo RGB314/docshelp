@@ -44,7 +44,7 @@ jobs:
   docker-e2e:
     name: docker-e2e
     runs-on: ubuntu-latest
-    timeout-minutes: 75  # the real-model e2e step alone takes ~35 min since Part 8
+    timeout-minutes: 90  # the real-model e2e step runs every lesson (~35 min before Part 9's eleven)
     env:
       E2E_MODEL: qwen2.5:0.5b
     steps:
