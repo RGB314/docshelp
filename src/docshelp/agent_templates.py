@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
+from deepagents.backends import CompositeBackend, FilesystemBackend, StateBackend
 from deepagents.backends.utils import create_file_data
 from langchain_core.language_models import BaseChatModel
 from langchain_core.retrievers import BaseRetriever
@@ -24,7 +25,7 @@ from langchain_core.tools import BaseTool
 
 from docshelp.config import PROJECT_ROOT
 from docshelp.customers import Customer
-from docshelp.deep import SKILLS_DIR, budget, deep_agent, list_tickets, search_changelog
+from docshelp.deep import DOCS_READ_ONLY, SKILLS_DIR, budget, deep_agent, list_tickets, search_changelog
 from docshelp.tools import make_search_docs, my_account, open_ticket, quote_price, send_reply
 
 TEMPLATES_DIR = PROJECT_ROOT / "agents"
@@ -89,6 +90,12 @@ def skill_files(names: list[str], skills_dir: Path = SKILLS_DIR) -> dict:
     return files
 
 
+def skills_backend(skills_dir: Path = SKILLS_DIR) -> CompositeBackend:
+    """Files in state, except /skills/, which is the skills folder on disk."""
+    skills = FilesystemBackend(root_dir=skills_dir, virtual_mode=True)
+    return CompositeBackend(default=StateBackend(), routes={"/skills/": skills})
+
+
 async def load_mcp_tools(servers: list[str]) -> list[BaseTool]:
     """Tools from the named local MCP servers (lessons 2.1 and 6.7)."""
     if not servers:
@@ -109,9 +116,15 @@ async def build_from_template(
     retriever: BaseRetriever | None = None,
     templates: dict[str, AgentTemplate] | None = None,
     checkpointer=None,
+    backend=None,
 ):
-    """Turn a template into a deep agent. Pass `skill_files(template.skills)` as the run's `files`."""
+    """Turn a template into a deep agent. Pass `skill_files(template.skills)` as the run's `files`.
+
+    On a server, where callers send only messages, pass `backend=skills_backend()` instead: /skills/ is then
+    read from the repo's skills/ folder (all of it, read-only), not from the run's files.
+    """
     catalog = tool_catalog(retriever)
+    storage = {"backend": backend, "permissions": [DOCS_READ_ONLY]} if backend is not None else {}
 
     def model_for(t: AgentTemplate) -> BaseChatModel:
         return fast_llm if t.model == "fast" and fast_llm is not None else llm
@@ -142,6 +155,7 @@ async def build_from_template(
         checkpointer=checkpointer,
         context_schema=Customer,  # tools like my_account read the caller from the run's context
         name=template.name,
+        **storage,
     )
 
 

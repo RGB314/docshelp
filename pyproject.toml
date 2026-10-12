@@ -1,7 +1,7 @@
 [project]
 name = "docshelp"
 version = "0.1.0"
-description = "A staged demo of the LangChain ecosystem: LangChain, LangGraph, LangSmith and LangGraph Server"
+description = "A zero-cost course on the LangChain ecosystem, built as one support app: LangChain, LangGraph, LangSmith, Deep Agents and deployment"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
@@ -21,6 +21,7 @@ dependencies = [
     "langsmith>=0.14.1",
     "mcp>=1.30.0",
     "pillow>=12.0.0",
+    "pyjwt>=2.10.0",
     "python-dotenv>=1.2.3",
     "trustcall>=0.0.39",
 ]
@@ -48,8 +49,10 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# A test stuck this long dumps every thread's stack to stderr, so a hang in CI shows where it is.
+faulthandler_timeout = 300
 markers = [
-    "e2e: end-to-end tests that run stages as processes and start a real LangGraph Server (`poe e2e`)",
+    "e2e: end-to-end tests that run lessons as processes and start a real LangGraph Server (`poe e2e`)",
 ]
 filterwarnings = [
     # trustcall (lessons 4.7-4.9) still imports Send from its pre-1.0 location; harmless until LangGraph 2.0.
@@ -70,9 +73,9 @@ init-env = { script = "docshelp.tasks:init_env_main", help = "Create .env from .
 doctor = { script = "docshelp.tasks:doctor_cli", help = "Check which model providers are installed and configured" }
 setup = { sequence = ["init-env", "doctor"], help = "First-time setup: create .env, then check providers" }
 test = { cmd = "pytest -m \"not e2e\"", help = "Unit and integration tests: offline, no API keys, ~1 min" }
-e2e = { cmd = "pytest -m e2e", help = "End-to-end tests: stages as processes + real LangGraph Server (no keys; real-model runs need DOCSHELP_E2E_MODEL + Ollama)" }
+e2e = { cmd = "pytest -m e2e", help = "End-to-end tests: lessons as processes + real LangGraph Server (no keys; real-model runs need DOCSHELP_E2E_MODEL + Ollama)" }
 lessons = { script = "docshelp.tasks:lessons_main", help = "List every lesson in curriculum order" }
 lesson = { script = "docshelp.tasks:lesson_main", help = "Run one lesson: uv run poe lesson 1.6 (extra args are passed on)" }
 evals = { cmd = "pytest evals -p no:cacheprovider", help = "DocsHelp evals against your real model (LangSmith-tracked if configured; see lesson 5.9)" }
-stage5 = { cmd = "python stages/05_langgraph_server.py", help = "LangGraph SDK client (start `poe server` first)" }
-server = { cmd = "langgraph dev", help = "LangGraph Server + Studio on http://127.0.0.1:2024" }
+server = { cmd = "langgraph dev", help = "LangGraph Server + Studio on http://127.0.0.1:2024 (Part 8)" }
+server-auth = { cmd = "langgraph dev --config langgraph.auth.json --port 2025", help = "The same server with auth, on http://127.0.0.1:2025 (lesson 8.10)" }

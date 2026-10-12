@@ -3,17 +3,19 @@
 from __future__ import annotations
 
 import contextlib
+import json
 import os
+import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.request
 from collections.abc import Iterator, Mapping
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-STAGES = ROOT / "stages"
 PROVIDER_KEYS = {
     "anthropic": "ANTHROPIC_API_KEY",
     "openai": "OPENAI_API_KEY",
@@ -34,10 +36,6 @@ def base_env(**overrides: str) -> dict[str, str]:
     env.update({"LANGSMITH_TRACING": "false", "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"})
     env.update(overrides)
     return env
-
-
-def run_stage(script: str, env: Mapping[str, str], *args: str, timeout: int = 180) -> subprocess.CompletedProcess:
-    return _run([sys.executable, str(STAGES / script), *args], env, timeout)
 
 
 def run_lesson(code: str, env: Mapping[str, str], *args: str, timeout: int = 180) -> subprocess.CompletedProcess:
@@ -80,14 +78,16 @@ def _langgraph_executable() -> str:
 
 
 @contextlib.contextmanager
-def langgraph_server(config_dir: Path, env: Mapping[str, str], startup_timeout: int = 120) -> Iterator[str]:
-    """Run `langgraph dev` for the langgraph.json in `config_dir`; yield its base URL."""
+def langgraph_server(
+    config_dir: Path, env: Mapping[str, str], startup_timeout: int = 120, config: str = "langgraph.json"
+) -> Iterator[str]:
+    """Run `langgraph dev` for the `config` file in `config_dir`; yield its base URL."""
     port = free_port()
     url = f"http://127.0.0.1:{port}"
-    log = config_dir / "server.log"
+    log = Path(tempfile.mkdtemp()) / "server.log"  # never inside the repo
     with log.open("w", encoding="utf-8") as out:
         proc = subprocess.Popen(
-            [_langgraph_executable(), "dev", "--port", str(port), "--no-browser", "--no-reload"],
+            [_langgraph_executable(), "dev", "--config", config, "--port", str(port), "--no-browser", "--no-reload"],
             cwd=config_dir,
             env=dict(env),
             stdout=out,
@@ -115,10 +115,39 @@ def langgraph_server(config_dir: Path, env: Mapping[str, str], startup_timeout: 
                 proc.kill()
 
 
+FAKE_APP = Path(__file__).parent / "fake_server" / "fake_app.py"
+
+
+def fake_server_dir(target: Path, config: str = "langgraph.json") -> Path:
+    """A server folder for `langgraph dev` that serves the repo's `config` with the fakes in fake_app.py.
+
+    The graphs, routes, auth and store index keep their names; every path points at fake_app.py, which
+    re-exports the real objects built with a fake model. So the fake server can't drift from the real one.
+    """
+    real = json.loads((ROOT / config).read_text(encoding="utf-8"))
+
+    def fake(spec: str) -> str:
+        return f"./fake_app.py:{spec.rsplit(':', 1)[1]}"
+
+    fake_config: dict = {
+        "dependencies": ["."],
+        "python_version": real["python_version"],
+        "graphs": {name: fake(spec) for name, spec in real["graphs"].items()},
+    }
+    if "http" in real:
+        fake_config["http"] = {**real["http"], "app": fake(real["http"]["app"])}
+    if "store" in real:
+        fake_config["store"] = {"index": {**real["store"]["index"], "embed": fake(real["store"]["index"]["embed"])}}
+    if "auth" in real:
+        fake_config["auth"] = {**real["auth"], "path": fake(real["auth"]["path"])}
+    target.mkdir(parents=True, exist_ok=True)
+    shutil.copy(FAKE_APP, target / "fake_app.py")
+    (target / "langgraph.json").write_text(json.dumps(fake_config, indent=2), encoding="utf-8")
+    return target
+
+
 def ollama_ready(base_url: str, model: str) -> bool:
     """True if an Ollama server is reachable at `base_url` and has `model` pulled."""
-    import json
-
     try:
         with urllib.request.urlopen(f"{base_url}/api/tags", timeout=3) as response:
             names = [m["name"] for m in json.load(response).get("models", [])]

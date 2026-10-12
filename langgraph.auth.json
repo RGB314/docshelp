@@ -1,0 +1,30 @@
+{
+  "$schema": "https://langgra.ph/schema.json",
+  "dependencies": ["."],
+  "graphs": {
+    "docshelp": "./src/docshelp/server.py:graph",
+    "react_agent": "./src/docshelp/server.py:react_agent",
+    "support_agent": "./src/docshelp/server.py:support_agent",
+    "memory_agent": "./src/docshelp/server.py:memory_agent",
+    "inbox_agent": "./src/docshelp/server.py:inbox_agent",
+    "inbox_ingest": "./src/docshelp/server.py:inbox_ingest",
+    "docs_researcher": "./src/docshelp/server.py:docs_researcher",
+    "ops_analyst": "./src/docshelp/server.py:ops_analyst",
+    "agent_from_template": "./src/docshelp/server.py:agent_from_template"
+  },
+  "http": {
+    "app": "./src/docshelp/webapp.py:app"
+  },
+  "store": {
+    "index": {
+      "embed": "./src/docshelp/deployment.py:embed",
+      "dims": 384,
+      "fields": ["$"]
+    }
+  },
+  "auth": {
+    "path": "./src/docshelp/auth.py:auth"
+  },
+  "env": ".env",
+  "python_version": "3.12"
+}

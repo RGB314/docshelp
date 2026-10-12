@@ -40,6 +40,8 @@ class Settings:
     vision_model: str | None = None  # None = the provider's image-capable model
     max_tokens: int = 4096
     embedding_model: str = "BAAI/bge-small-en-v1.5"
+    # Signs the demo login tokens of lesson 8.10. Dev only: set your own in .env if the server is reachable by others.
+    auth_secret: str = "docshelp-dev-only-secret-change-me"
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:
@@ -60,6 +62,7 @@ class Settings:
             vision_model=read("DOCSHELP_VISION_MODEL"),
             max_tokens=int(max_tokens) if max_tokens else defaults.max_tokens,
             embedding_model=read("DOCSHELP_EMBEDDING_MODEL") or defaults.embedding_model,
+            auth_secret=read("DOCSHELP_AUTH_SECRET") or defaults.auth_secret,
         )
 
 

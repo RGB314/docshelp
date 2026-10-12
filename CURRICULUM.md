@@ -24,7 +24,7 @@ Run `uv run poe lessons` to list the lessons. Run one with `uv run poe lesson <n
 | 5 | LangSmith: tracing, datasets, evaluators, experiments, prompt engineering, feedback, annotation | 1–4 | ✅ shipped |
 | 6 | Agent projects: an ambient support-inbox agent and a deep-research agent | 1–5 | ✅ shipped |
 | 7 | Deep Agents: planning, filesystems, sandboxes, skills, memory, subagents, agents-from-config | 1–6 | ✅ shipped |
-| 8 | Deployment: LangGraph Server, SDK, assistants, double texting, custom routes, auth, Store, Chat UI | 3–7 | planned |
+| 8 | Deployment: LangGraph Server, SDK, assistants, double texting, custom routes, auth, Store, Chat UI | 3–7 | ✅ shipped |
 | 9 | Production: cost, quality, security monitoring, online evals, automations, and the improvement loop | 5, 8 | planned |
 
 ## Free vs paid: what runs where
@@ -35,7 +35,7 @@ Run `uv run poe lessons` to list the lessons. Run one with `uv run poe lesson <n
 | Embeddings | Local fastembed, always free |
 | LangSmith tracing, datasets, experiments, Prompt Hub, annotation queues, online evaluators | Free LangSmith Developer account (optional; every lesson also runs locally) |
 | LangSmith Studio, `langgraph dev` | Free, local |
-| LangSmith Deployment (cloud), Managed Deep Agents | `langgraph dev` / Docker locally; cloud deployment explained only |
+| LangSmith Deployment (cloud), Managed Deep Agents | `langgraph dev` / Docker locally (Part 8); cloud deployment explained only (lesson 8.13) |
 | LangSmith Insights, Dashboards, Engine, Fleet | Local twins (Parts 7 and 9) that teach the same concept |
 
 ## Coverage matrix
@@ -76,7 +76,7 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 | M3 L3 Human In The Loop | `lessons/p2_production_agents/07_human_in_the_loop.py` |
 | M3 L4 Dynamic Agents | `lessons/p2_production_agents/08_dynamic_agents.py`, `lessons/p1_langchain/09_dynamic_prompt.py` |
 | M3 L5 Email Assistant (project) | `lessons/p2_production_agents/09_capstone_email_assistant.py` |
-| M3 L6 Agent Chat UI | Part 8 (planned) |
+| M3 L6 Agent Chat UI | `lessons/p8_deployment/11_chat_ui_and_your_own_ui.py` |
 
 ### Quickstart: LangGraph Essentials (Python)
 
@@ -95,7 +95,7 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 | M1 L1 Motivation, L2 Simple Graph | `lessons/p3_langgraph/01_state_nodes_edges.py` |
 | M1 L4 Chain, L5 Router, L6 Agent, L7 Agent with Memory | `lessons/p3_langgraph/03_react_agent_by_hand.py` (graph: `src/docshelp/react.py`), router also in `lessons/p3_langgraph/02_conditional_edges_and_command.py` |
 | M1 L3 LangSmith Studio | `lessons/p3_langgraph/04_studio.py` |
-| M1 L8 Intro to Deployment | Part 8 (planned) |
+| M1 L8 Intro to Deployment | `lessons/p8_deployment/01_deployment_concepts.py` |
 | M2 L1 State Schema | `lessons/p3_langgraph/05_state_schemas.py` |
 | M2 L2 State Reducers | `lessons/p3_langgraph/06_reducers.py` |
 | M2 L3 Multiple Schemas | `lessons/p3_langgraph/07_multiple_schemas.py` |
@@ -115,8 +115,8 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 | M5 L3 Memory Schema + Profile | `lessons/p4_langgraph_scale/07_memory_profile.py` |
 | M5 L4 Memory Schema + Collection | `lessons/p4_langgraph_scale/08_memory_collection.py` |
 | M5 L5 Agent with Long-Term Memory | `lessons/p4_langgraph_scale/09_capstone_memory_agent.py` (agent: `src/docshelp/memory.py`) |
-| M6 L1 Deployment Concepts, L2 Creating a Deployment, L3 Connecting to a Deployment | Part 8 (planned) |
-| M6 L4 Double Texting, L5 Assistants | Part 8 (planned) |
+| M6 L1 Deployment Concepts, L2 Creating a Deployment, L3 Connecting to a Deployment | `lessons/p8_deployment/01_deployment_concepts.py`, `lessons/p8_deployment/13_shipping_to_production.py`, `lessons/p8_deployment/02_sdk_and_remote_graph.py`, `lessons/p8_deployment/03_threads_runs_streaming.py` |
+| M6 L4 Double Texting, L5 Assistants | `lessons/p8_deployment/04_double_texting.py`, `lessons/p8_deployment/05_assistants.py` |
 
 ### Introduction to Agent Observability & Evaluations (LangSmith)
 
@@ -155,7 +155,7 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 | M1 Debugging with Studio | `lessons/p3_langgraph/04_studio.py` |
 | M1 What is Tracing?, Capstone | `lessons/p5_langsmith/01_tracing_basics.py`, `lessons/p5_langsmith/03_threads_and_analysis.py` |
 | M2 Datasets and Offline Evals, Experiments, Capstone | `lessons/p5_langsmith/04_datasets.py`, `lessons/p5_langsmith/06_experiments.py`, `lessons/p5_langsmith/09_evals_as_tests.py` |
-| M3 Deployments | Part 8 (planned) |
+| M3 Deployments | `lessons/p8_deployment/01_deployment_concepts.py`, `lessons/p8_deployment/13_shipping_to_production.py` |
 | M4 Online Evaluators and Automations, Annotation Queues, Insights, Dashboards, Capstone | Part 9 (planned) |
 | M5 Closing the Loop, Automating the ADLC with LangSmith Engine | Part 9 (planned) |
 
@@ -168,7 +168,7 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 | M3 Agent Evaluations | `lessons/p6_agent_projects/02_ambient_evaluations.py` |
 | M4 Human-in-the-Loop | `lessons/p6_agent_projects/03_ambient_human_in_the_loop.py` |
 | M5 Memory | `lessons/p6_agent_projects/04_ambient_memory.py` |
-| M6 Deployment | Part 8 (planned) |
+| M6 Deployment | `lessons/p8_deployment/12_ambient_agent_deployment.py` (ingest graph and cron; Agent Inbox over the API) |
 
 ### Project: Deep Research with LangGraph
 
@@ -218,12 +218,12 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 
 | Academy lesson | Covered by |
 |---|---|
-| M1 Concepts, The Agent, Deploy, Use the Tutor | Part 8 (planned) |
-| M2 Connecting, Assistants, Connecting the UI, Custom Routes | Part 8 (planned) |
-| M3 UI Walkthrough | Part 8 (planned) |
-| M4 Memory In LangGraph, Accessing Storage, Memory in Deep Agents | Part 8 (planned) |
-| M5 Introduction to Auth, Authentication, Authorization, Auth Provider, Auth on Tutor | Part 8 (planned) |
-| M6 Deploying Without Coding Using deepagents-cli, Deploy the Tutor Agent, Bring Your Own UI | Part 8 (planned) |
+| M1 Concepts, The Agent, Deploy, Use the Tutor | `lessons/p8_deployment/01_deployment_concepts.py` (server: `src/docshelp/server.py`, `src/docshelp/deployment.py`), `lessons/p8_deployment/13_shipping_to_production.py`, `lessons/p8_deployment/03_threads_runs_streaming.py` |
+| M2 Connecting, Assistants, Connecting the UI, Custom Routes | `lessons/p8_deployment/02_sdk_and_remote_graph.py`, `lessons/p8_deployment/05_assistants.py`, `lessons/p8_deployment/11_chat_ui_and_your_own_ui.py`, `lessons/p8_deployment/06_custom_routes.py` (routes: `src/docshelp/webapp.py`) |
+| M3 UI Walkthrough | `lessons/p8_deployment/11_chat_ui_and_your_own_ui.py` (Studio, Agent Chat UI, Agent Inbox walked through in the docstring) |
+| M4 Memory In LangGraph, Accessing Storage, Memory in Deep Agents | `lessons/p8_deployment/07_server_store_and_memory.py`, `lessons/p8_deployment/08_deep_agent_on_the_server.py` |
+| M5 Introduction to Auth, Authentication, Authorization, Auth Provider, Auth on Tutor | `lessons/p8_deployment/10_auth.py` (handlers and the local token issuer: `src/docshelp/auth.py`; config: `langgraph.auth.json`) |
+| M6 Deploying Without Coding Using deepagents-cli, Deploy the Tutor Agent, Bring Your Own UI | `lessons/p8_deployment/09_deploy_without_code.py` (the deprecated `deepagents deploy` explained; templates deployed through a graph factory), `lessons/p8_deployment/08_deep_agent_on_the_server.py`, `lessons/p8_deployment/11_chat_ui_and_your_own_ui.py` (page: `src/docshelp/chat.html`) |
 
 ### Monitoring Production Agents
 
@@ -668,4 +668,62 @@ cancels it later.
 They describe an agent as configuration (instructions, tools, skills, subagents, approvals, MCP servers, triggers)
 that a harness turns into a running deep agent. People review files, not code, and the same concepts from this part
 apply to all three.
+</details>
+
+### Part 8 self-check
+
+<details>
+<summary>1. What does LangGraph Server give a graph that a Python process with a checkpointer doesn't?</summary>
+
+An HTTP API with assistants, threads and runs; background runs on a task queue with workers; managed persistence
+(checkpoints and the Store, in Postgres when deployed); streaming over server-sent events; double-texting strategies;
+crons, webhooks, custom routes and auth; and Studio. Clients use the SDK, `RemoteGraph` or plain HTTP.
+</details>
+
+<details>
+<summary>2. A customer sends a second message while the first run is still going. Compare the four multitask strategies.</summary>
+
+`reject` refuses the new run (409). `enqueue` runs it after the first, which finishes normally. `interrupt` stops the
+first run, keeps its progress and starts the new one. `rollback` stops the first run and deletes it, as if the first
+message had never been sent.
+</details>
+
+<details>
+<summary>3. You want short answers in chat and step-by-step answers in email. Why an assistant rather than a second graph?</summary>
+
+An assistant is the same graph plus saved settings (context, config, metadata), created through the API with no new
+code or deploy. Each change is a new version, and `set_latest` rolls back instantly. The graph's context schema says
+which settings are allowed, so a UI can render them.
+</details>
+
+<details>
+<summary>4. Where does a deep agent's <code>AGENTS.md</code> live on the server, and how could an admin review it?</summary>
+
+In the server's Store: namespace `("support-ops", "memories")`, key `/AGENTS.md`, value `{"content", "encoding"}`,
+because the agent's `/memories/` route is a `StoreBackend` and the server provides the store. An admin reads or edits
+it with `client.store.get_item` / `put_item`, without going through the agent.
+</details>
+
+<details>
+<summary>5. Authentication versus authorization: which handler does what in <code>docshelp/auth.py</code>?</summary>
+
+`@auth.authenticate` verifies the bearer token and returns the user (or 401). The `@auth.on` handlers authorize per
+resource and action: stamp an owner and return a filter so customers only see their threads, forbid customers from
+managing assistants (403), overwrite a run's context with the caller's account, and scope Store namespaces. Swapping
+in a real identity provider changes only token verification.
+</details>
+
+<details>
+<summary>6. Why does <code>agent_from_template</code> read files with <code>asyncio.to_thread</code>, and what is a graph factory?</summary>
+
+A factory is a function in `langgraph.json` that the server calls per run (with the config and/or a `ServerRuntime`)
+to build the graph, so each assistant can get a different agent. The server runs on an event loop: a blocking call
+there stalls every user, and `langgraph dev` reports it as a `BlockingError`.
+</details>
+
+<details>
+<summary>7. How does the deployed inbox agent avoid answering the same email twice?</summary>
+
+Each email's thread id is a `uuid5` of the email id. Ingesting creates the thread only if it doesn't exist and starts a
+run only if the thread has none. So the cron can fetch the same emails every 15 minutes safely.
 </details>

@@ -508,6 +508,7 @@ dependencies = [
     { name = "langsmith" },
     { name = "mcp" },
     { name = "pillow" },
+    { name = "pyjwt" },
     { name = "python-dotenv" },
     { name = "trustcall" },
 ]
@@ -560,6 +561,7 @@ requires-dist = [
     { name = "langsmith", specifier = ">=0.14.1" },
     { name = "mcp", specifier = ">=1.30.0" },
     { name = "pillow", specifier = ">=12.0.0" },
+    { name = "pyjwt", specifier = ">=2.10.0" },
     { name = "python-dotenv", specifier = ">=1.2.3" },
     { name = "trustcall", specifier = ">=0.0.39" },
 ]

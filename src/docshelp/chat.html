@@ -1,0 +1,90 @@
+<!doctype html>
+<!--
+  "Bring your own UI" (lesson 8.11): a chat page with no framework and no build step.
+  Served by LangGraph Server at /ui (see webapp.py), it calls the same HTTP API as the SDK and Agent Chat UI:
+    POST /threads                              -> a new conversation
+    POST /threads/{id}/runs/stream             -> run the agent, streamed as server-sent events
+  It asks for "messages-tuple" events, i.e. (token chunk, metadata) pairs, and appends tokens as they arrive.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DocsHelp chat</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 0 auto; padding: 16px; }
+    #log { border: 1px solid #ccc; border-radius: 8px; padding: 12px; min-height: 300px; white-space: pre-wrap; }
+    .user { color: #0b5394; margin-top: 12px; }
+    .agent { color: #222; }
+    .tool { color: #888; font-size: 0.9em; }
+    form { display: flex; gap: 8px; margin-top: 12px; }
+    input[type=text] { flex: 1; padding: 8px; }
+  </style>
+</head>
+<body>
+  <h1>DocsHelp</h1>
+  <label>Assistant <input id="assistant" value="support_agent"></label>
+  <div id="log"></div>
+  <form id="form">
+    <input id="text" type="text" placeholder="Ask about Nimbus Notes..." autocomplete="off">
+    <button>Send</button>
+  </form>
+  <script>
+    const log = document.getElementById("log");
+    let threadId = null;
+
+    function line(cls, text) {
+      const div = document.createElement("div");
+      div.className = cls;
+      div.textContent = text;
+      log.appendChild(div);
+      return div;
+    }
+
+    async function send(text) {
+      if (!threadId) {
+        const thread = await (await fetch("/threads", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })).json();
+        threadId = thread.thread_id;
+      }
+      line("user", "You: " + text);
+      const reply = line("agent", "DocsHelp: ");
+      const response = await fetch(`/threads/${threadId}/runs/stream`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          assistant_id: document.getElementById("assistant").value,
+          input: { messages: [{ role: "user", content: text }] },
+          stream_mode: ["messages-tuple"],
+        }),
+      });
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split("\n\n");  // server-sent events are separated by a blank line
+        buffer = events.pop();
+        for (const event of events) {
+          const name = (event.match(/^event: (.*)$/m) || [])[1];
+          const data = (event.match(/^data: (.*)$/m) || [])[1];
+          if (name !== "messages" || !data) continue;
+          const [chunk] = JSON.parse(data);
+          if (chunk.type === "tool") line("tool", `  (${chunk.name} done)`);
+          else if (chunk.type === "AIMessageChunk" || chunk.type === "ai") {
+            reply.textContent += typeof chunk.content === "string" ? chunk.content : "";
+          }
+        }
+      }
+    }
+
+    document.getElementById("form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const input = document.getElementById("text");
+      if (input.value.trim()) send(input.value.trim());
+      input.value = "";
+    });
+  </script>
+</body>
+</html>

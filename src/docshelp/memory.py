@@ -149,8 +149,13 @@ def build_memory_agent(
     store: BaseStore,
     retriever: BaseRetriever | None = None,
     checkpointer: Checkpointer | None = None,
+    *,
+    on_server: bool = False,
 ):
-    """A support agent with long-term memory (Part 4 capstone). Pass `context=Customer(...)` per run."""
+    """A support agent with long-term memory (Part 4 capstone). Pass `context=Customer(...)` per run.
+
+    `on_server=True` compiles it without a checkpointer or store: LangGraph Server provides both (lesson 8.7).
+    """
     search_docs = make_search_docs(retriever)
     model = llm.bind_tools([UpdateMemory, search_docs])
     profile_extractor = create_extractor(llm, tools=[CustomerProfile], tool_choice="CustomerProfile")
@@ -193,4 +198,6 @@ def build_memory_agent(
     builder.add_edge(START, "assistant")
     builder.add_conditional_edges("assistant", route)
     builder.add_edge("act", "assistant")
+    if on_server:
+        return builder.compile(name="memory_agent")
     return builder.compile(checkpointer=checkpointer or InMemorySaver(), store=store, name="memory_agent")

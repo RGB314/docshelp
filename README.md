@@ -1,4 +1,4 @@
-# DocsHelp: the LangChain ecosystem, one stage at a time
+# DocsHelp: the LangChain ecosystem, one lesson at a time
 
 [![CI](https://github.com/RGB314/docshelp/actions/workflows/ci.yml/badge.svg)](https://github.com/RGB314/docshelp/actions/workflows/ci.yml)
 
@@ -20,10 +20,9 @@ with self-check questions.
 | 5 | **LangSmith:** tracing, datasets, evaluators, experiments, pairwise, evals as tests, prompts, feedback, annotation | `uv run poe lesson 5.1` … `5.12` | ✅ |
 | 6 | **Agent projects:** an ambient support-inbox agent (triage, Agent Inbox, learning memory, evals) and a deep-research agent (scoping, parallel researchers, MCP, reports) | `uv run poe lesson 6.1` … `6.9` | ✅ |
 | 7 | **Deep Agents:** planning, filesystem backends, a shell and an interpreter, offloading, skills, `AGENTS.md` memory, subagent teams (sync, dynamic, async), agents from templates, dcode | `uv run poe lesson 7.1` … `7.16` | ✅ |
-| 8 | **Deployment:** LangGraph Server, SDK, assistants, double texting, custom routes, auth, Chat UI | `uv run poe stage5` for now | |
+| 8 | **Deployment:** LangGraph Server, the SDK and `RemoteGraph`, threads and runs, double texting, assistants, custom routes, the server's Store, auth, Chat UI and your own UI, crons, Docker | `uv run poe server`, then `uv run poe lesson 8.1` … `8.13` | ✅ |
 | 9 | **Production:** cost, quality and security monitoring, online evals, the improvement loop | (planned) | |
 
-The stages that predate the curriculum (4–5) keep working until their parts replace them.
 ## Contents
 
 <!-- toc -->
@@ -47,7 +46,7 @@ The stages that predate the curriculum (4–5) keep working until their parts re
   - [Part 5: LangSmith observability and evaluation](#part-5-langsmith-observability-and-evaluation)
   - [Part 6: Agent projects (ambient inbox and deep research)](#part-6-agent-projects-ambient-inbox-and-deep-research)
   - [Part 7: Deep Agents](#part-7-deep-agents)
-  - [Stage 5: LangGraph Server and Studio](#stage-5-langgraph-server-and-studio)
+  - [Part 8: Deployment](#part-8-deployment)
 - [Project layout](#project-layout)
 - [Tests](#tests)
 - [How the provider layer is designed](#how-the-provider-layer-is-designed)
@@ -70,11 +69,11 @@ flowchart LR
         C[("Checkpointer<br/>memory · pause/resume · history")]
     end
     subgraph SRV["LangGraph Server"]
-        API["HTTP API<br/>assistants · threads · runs"]
+        API["HTTP API<br/>assistants · threads · runs · store · crons<br/>custom routes · auth"]
         ST["Studio UI"]
     end
     LS["LangSmith<br/>traces · datasets · evals"]
-    SDK["langgraph_sdk client<br/>(stage 5)"]
+    SDK["langgraph_sdk client<br/>(Part 8)"]
 
     M & P & R & T --> G
     G <--> C
@@ -266,8 +265,8 @@ Embeddings run locally on your CPU (`BAAI/bge-small-en-v1.5` via fastembed). The
 | List the lessons | `uv run poe lessons` | `docker compose run --rm app poe lessons` |
 | Run a lesson | `uv run poe lesson 1.6` | `docker compose run --rm app poe lesson 1.6` |
 | Evals against your model (lesson 5.9) | `uv run poe evals` | `docker compose run --rm app poe evals` |
-| Stage 5 server | `uv run poe server` | `docker compose up -d server` |
-| Stage 5 client | `uv run poe stage5` (second terminal) | `docker compose run --rm app poe stage5` |
+| LangGraph Server (Part 8) | `uv run poe server` | `docker compose up -d server` |
+| The server with auth (lesson 8.10) | `uv run poe server-auth` | `docker compose up -d server-auth` |
 | Tests | `uv run poe test` | `docker compose run --rm app poe test` |
 | Provider check | `uv run poe doctor` | `docker compose run --rm app poe doctor` |
 
@@ -395,17 +394,33 @@ LangSmith UI.
 | 7.15 Agents from templates | `agents/*.md` templates (a Fleet twin) become a refund desk and an inbox watcher | one builder, many agents; MDA's layout explained |
 | 7.16 dcode project config | `.deepagents/` (memory, skill, subagent, `.mcp.json`) loaded with the SDK | the folder dcode reads is plain deep-agent config |
 
-### Stage 5: LangGraph Server and Studio
+### Part 8: Deployment
+
+Part 8's lessons are clients of a running server. Start it in one terminal, then run the lessons in another:
+
 ```bash
-uv run poe server       # terminal 1: API on :2024, opens Studio in your browser
-uv run poe stage5       # terminal 2: SDK client
+uv run poe server            # terminal 1: API on :2024 (lesson 8.10 uses `uv run poe server-auth`, on :2025)
+uv run poe lesson 8.1        # terminal 2
 ```
-With Docker, run `docker compose up -d server`, then open
-<https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024> for Studio.
-`langgraph.json` points the server at `src/docshelp/server.py:graph`. The client creates a thread, streams a run,
-detects the approval interrupt, and resumes it through the API.
-**Look for:** Studio shows the graph live. You can chat, watch each node run, edit state, and re-run from any
-step. The same client code works against a cloud deployment (LangSmith Deployment); only the URL changes.
+With Docker, run `docker compose up -d server server-auth`, then `docker compose run --rm app poe lesson 8.1`.
+Studio is at <https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024>, and a small chat page at
+<http://127.0.0.1:2024/ui>.
+
+| Lesson | What you see | Look for |
+|---|---|---|
+| 8.1 Deployment concepts | `langgraph.json` explained, the live server's info, one assistant per graph, a graph's drawing and context schema | what the server adds to a graph |
+| 8.2 SDK and `RemoteGraph` | stateless runs with the sync and async clients; a deployed graph used like a local one, and as a node in a local graph | small talk never leaves the local graph |
+| 8.3 Threads, runs and streaming | node updates, tokens, a background run, the ticket approval resumed over the API, history, search and forks | the run pauses; a `command` resumes it |
+| 8.4 Double texting | a second message while the first run works, under reject, enqueue, interrupt and rollback | what the thread holds afterwards |
+| 8.5 Assistants | a concise chat assistant and a detailed email assistant from one graph; versions and rollback | settings without code or redeploys |
+| 8.6 Custom routes | `/health`, `/tickets` and `/ui` from `src/docshelp/webapp.py`, served next to the API | your routes in the same OpenAPI document |
+| 8.7 The server's Store | a CRM job writes a memory; the memory agent remembers Ada across threads; semantic search with local embeddings | the same memories from the agent and the SDK |
+| 8.8 A deep agent on the server | the Ops analyst's report approved over the API; its `AGENTS.md` read back from the server's Store | the memory changes, and a new thread follows it |
+| 8.9 Deploying without code | Markdown templates from `agents/` become assistants of one graph factory | a new agent is a file plus an API call |
+| 8.10 Auth | tokens from a local stand-in provider; owners only, staff roles, the run's account taken from the token | 401, 403 and 404, each for a reason |
+| 8.11 Chat UI and your own UI | one chat turn over plain HTTP and server-sent events; Agent Chat UI, Studio and Agent Inbox | every UI uses the same API |
+| 8.12 Ambient agent deployment | an ingest graph starts one run per email, a cron schedules it, drafts wait in an inbox | ingesting twice answers nothing twice |
+| 8.13 Shipping to production | the generated production Dockerfile, this repo's compose services, the checklist | the same client code, a different URL |
 
 ## Project layout
 
@@ -446,17 +461,19 @@ src/docshelp/
   deep.py               Deep Agents: tools, backends, subagent team, local agent server, the Ops analyst (Part 7)
   agent_templates.py    agents from Markdown templates and dcode project folders (lessons 7.15-7.16)
   graph.py              the LangGraph support graph, Part 3 capstone (dependencies injectable)
-  server.py             graphs served by LangGraph Server / Studio
+  server.py             graphs served by LangGraph Server / Studio (Part 8)
+  deployment.py         the served support agent, the inbox ingest graph, store embeddings, client helpers (Part 8)
+  auth.py               the server's authentication and authorization, and a local token issuer (lesson 8.10)
+  webapp.py, chat.html  custom routes (/health, /tickets) and a chat page at /ui (lessons 8.6, 8.11)
   console.py            UTF-8 terminal output on every OS
   tasks.py              init-env, doctor and the lesson runner behind `poe`
 lessons/                the curriculum: p1_langchain/, p2_production_agents/, ... (see CURRICULUM.md)
-stages/                 stage 5, kept until Part 8 replaces it
 evals/                  evals as pytest tests (lesson 5.9; `uv run poe evals`), not part of `poe test`
 tests/                  offline tests: scripted fake LLM + fake embeddings, no keys needed
-langgraph.json          LangGraph Server / Studio config
+langgraph.json          LangGraph Server / Studio config; langgraph.auth.json adds auth (lesson 8.10)
 pyproject.toml          dependencies, provider extras, and the `poe` task definitions
 Dockerfile              container image (uv + locked deps + pre-downloaded embedding model)
-compose.yaml            app, server and optional ollama services
+compose.yaml            app, server, server-auth and optional ollama services
 .devcontainer/          VS Code Dev Container / GitHub Codespaces config
 .gitattributes          LF line endings on every OS
 ```
@@ -471,10 +488,11 @@ uv run poe e2e          # end-to-end, ~10 min
 Both suites run offline with no API keys.
 
 **End-to-end tests** (`tests/e2e/`):
-- Every lesson and stage runs as a real process with no keys and must exit with clear setup instructions (no tracebacks).
-- A real LangGraph Server serves the real graph (scripted model), and the real stage 5 client drives it through a
-  question, the approval interrupt and the resume.
-- With `DOCSHELP_E2E_MODEL` set and Ollama running, every lesson and stage also runs against a real local model, still
+- Every lesson runs as a real process with no keys and must exit with clear setup instructions (no tracebacks).
+- Two real LangGraph Servers serve the repo's `langgraph.json` and `langgraph.auth.json` with a rule-based fake model
+  (`tests/e2e/fake_server/`), and every Part 8 lesson runs against them.
+- With `DOCSHELP_E2E_MODEL` set and Ollama running, every lesson also runs against a real local model (Part 8's
+  against the real servers), still
   with no keys:
   ```bash
   ollama pull qwen2.5:0.5b
@@ -483,8 +501,8 @@ Both suites run offline with no API keys.
   ```
 
 **CI** (`.github/workflows/ci.yml`) runs both suites natively on Ubuntu, Windows and macOS. A `docker-e2e` job
-builds the image and runs the suites in the container, including the real-model stages against the compose
-`ollama` service, then checks the compose `server` + stage 5 path.
+builds the image and runs the suites in the container, including the real-model lessons against the compose
+`ollama` service, then runs lessons 8.3 and 8.10 against the compose `server` and `server-auth` services.
 
 The unit tests cover:
 - **every lesson:** its `run()` driven by `FakeChatModel` (a scripted `BaseChatModel` that streams and calls tools),
@@ -497,7 +515,7 @@ The unit tests cover:
   structured-output strategy, registry behaviour
 - **settings:** parsing and validation of every `DOCSHELP_*` variable
 - **repo hygiene:** no machine-specific paths, `.env` git-ignored, `.env.example` documents every provider with empty
-  values, every provider has a pyproject extra, and no lesson or stage hard-codes a vendor or model
+  values, every provider has a pyproject extra, and no lesson hard-codes a vendor or model
 - **portability:**
   - UTF-8 output on non-UTF-8 streams, and the `poe` tasks and helpers
   - Dockerfile uses the lockfile and matching Python version; `.dockerignore` keeps secrets out
@@ -568,4 +586,4 @@ it's just as useful for humans. `CLAUDE.md` points Claude Code at it.
   (and costs nothing) everywhere.
 - `InMemorySaver` / `InMemoryVectorStore` keep the demo dependency-free. For production, swap in
   `langgraph-checkpoint-postgres` and a persistent vector store; the rest of the code doesn't change.
-- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): Deep Agents (Part 7), deployment with auth (Part 8), and production monitoring (Part 9).
+- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): production monitoring and the improvement loop (Part 9).

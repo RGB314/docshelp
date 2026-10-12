@@ -16,7 +16,7 @@ from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 
 DOCS_DIR = Path(__file__).resolve().parents[2] / "data" / "docs"
-mcp = FastMCP("nimbus-docs")
+mcp = FastMCP("nimbus-docs", log_level="WARNING")  # FastMCP configures logging on creation: keep importers quiet
 
 
 @mcp.tool()

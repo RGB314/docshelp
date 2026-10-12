@@ -56,7 +56,10 @@ def run(
 
     def turn(text: str) -> dict:
         print(f"\nLead: {text}")
-        result = agent.invoke({"messages": [{"role": "user", "content": text}]}, config)
+        # durability="sync": save each step's checkpoint before the next step starts. The default ("async")
+        # queues saves on a thread pool; on small machines a long run like this one can fill the pool with saves
+        # waiting on each other, and LangGraph 1.2 then deadlocks. Sync costs a little speed and can't pile up.
+        result = agent.invoke({"messages": [{"role": "user", "content": text}]}, config, durability="sync")
         while "__interrupt__" in result:
             decisions = []
             for action in result["__interrupt__"][0].value["action_requests"]:
@@ -65,7 +68,7 @@ def run(
                 print(
                     f"  approval needed: {action['name']} {action['args'].get('file_path')} -> {decisions[-1]['type']}"
                 )
-            result = agent.invoke(Command(resume={"decisions": decisions}), config)
+            result = agent.invoke(Command(resume={"decisions": decisions}), config, durability="sync")
         print(f"Analyst: {result['messages'][-1].text}")
         return result
 

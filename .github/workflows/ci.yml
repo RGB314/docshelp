@@ -37,14 +37,14 @@ jobs:
       - name: Unit and integration tests
         run: uv run poe test
 
-      - name: End-to-end tests (stages as processes, real LangGraph Server, no keys)
+      - name: End-to-end tests (lessons as processes, real LangGraph Server, no keys)
         run: uv run poe e2e
 
-  # The Docker path end to end, including every stage against a real local model (Ollama), still keyless.
+  # The Docker path end to end, including every lesson against a real local model (Ollama), still keyless.
   docker-e2e:
     name: docker-e2e
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 75  # the real-model e2e step alone takes ~35 min since Part 8
     env:
       E2E_MODEL: qwen2.5:0.5b
     steps:
@@ -72,13 +72,14 @@ jobs:
           for i in $(seq 1 30); do docker compose exec -T ollama ollama list && break; sleep 2; done
           docker compose exec -T ollama ollama pull "$E2E_MODEL"
 
-      - name: End-to-end tests in the container, including every stage against the real model
+      - name: End-to-end tests in the container, including every lesson against the real model
         run: docker compose run --rm -T -e DOCSHELP_E2E_MODEL="$E2E_MODEL" app poe e2e -v -rs
 
-      - name: Compose stack - LangGraph Server service + stage 5 client over the compose network
+      - name: Compose stack - LangGraph Server services + Part 8 clients over the compose network
         run: |
-          docker compose up -d --wait server
-          docker compose run --rm -T app poe stage5
+          docker compose up -d --wait server server-auth
+          docker compose run --rm -T app poe lesson 8.3
+          docker compose run --rm -T app poe lesson 8.10
 
       - name: Show container logs
         if: failure()

@@ -29,7 +29,7 @@ from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from langgraph.types import Checkpointer, Command
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from docshelp.config import structured_llm
 from docshelp.ingest import format_docs
@@ -231,17 +231,23 @@ def build_supervisor(llm: BaseChatModel, researcher, *, max_concurrent: int = 3,
         if done:
             return Command(goto=END)
         replies: list[ToolMessage] = []
+        research = []
         for call in calls:
-            if call["name"] == "think":
-                replies.append(ToolMessage(think.invoke(call["args"]), tool_call_id=call["id"], name="think"))
-        research = [c for c in calls if c["name"] == "ConductResearch"]
+            try:  # small models sometimes leave out required arguments: tell the model, don't crash the run
+                if call["name"] == "think":
+                    replies.append(ToolMessage(think.invoke(call["args"]), tool_call_id=call["id"], name="think"))
+                elif call["name"] == "ConductResearch":
+                    research.append((call, ConductResearch.model_validate(call["args"]).research_topic))
+            except ValidationError as err:
+                text = f"Error: invalid arguments for {call['name']}: {err.errors()[0]['msg']}. Try again."
+                replies.append(ToolMessage(text, tool_call_id=call["id"], name=call["name"], status="error"))
         allowed, overflow = research[:max_concurrent], research[max_concurrent:]
         # The parallel step: each researcher is an independent subgraph run, awaited together.
-        runs = [researcher.ainvoke(research_input(c["args"]["research_topic"])) for c in allowed]
+        runs = [researcher.ainvoke(research_input(topic)) for _, topic in allowed]
         results = await asyncio.gather(*runs)
-        for call, result in zip(allowed, results):
+        for (call, _), result in zip(allowed, results):
             replies.append(ToolMessage(result["compressed_research"], tool_call_id=call["id"], name="ConductResearch"))
-        for call in overflow:
+        for call, _ in overflow:
             text = f"Not run: at most {max_concurrent} researchers at a time. Ask again next turn if still needed."
             replies.append(ToolMessage(text, tool_call_id=call["id"], name="ConductResearch"))
         return Command(

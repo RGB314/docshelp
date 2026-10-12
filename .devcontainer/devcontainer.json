@@ -7,9 +7,10 @@
     "UV_PROJECT_ENVIRONMENT": "/home/vscode/.venv"
   },
   "postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && ~/.local/bin/uv sync --all-extras && ~/.local/bin/uv run poe init-env",
-  "forwardPorts": [2024],
+  "forwardPorts": [2024, 2025],
   "portsAttributes": {
-    "2024": { "label": "LangGraph Server" }
+    "2024": { "label": "LangGraph Server" },
+    "2025": { "label": "LangGraph Server with auth" }
   },
   "customizations": {
     "vscode": {
