@@ -30,6 +30,7 @@ Every command works the same in PowerShell, cmd, Git Bash, macOS and Linux. Don'
 | Evals against a real model (not offline) | `uv run poe evals` (lesson 5.9) |
 | LangGraph Server for Part 8 | `uv run poe server` (:2024); with auth: `uv run poe server-auth` (:2025) |
 | Monitoring dashboard (Part 9) | `uv run poe dashboard` (writes `data/reports/dashboard.html`) |
+| Course website | `uv run poe site` (strict build into `.site/`), `uv run poe site-serve` (preview) |
 | Periodic maintenance | `uv run poe maintenance`, then follow `MAINTENANCE.md` (Claude Code: `/maintain-curriculum`) |
 | Docker equivalents | `docker compose build`, then `docker compose run --rm app poe <task>` |
 
@@ -64,6 +65,9 @@ Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both mu
 - `src/docshelp/{monitoring,guardrails,insights,engine,dashboard}.py`: Part 9's production monitoring. Lessons log
   to `data/monitoring/` (git-ignored) and take `path=`/`feedback_path=` so tests use temp files. Online evaluators,
   insights and the engine must survive a judge's invalid output (skip it, never crash the lesson).
+- `src/docshelp/site.py`: the GitHub Pages site, generated from README, CURRICULUM, ROADMAP, MAINTENANCE, AGENTS and
+  the lesson docstrings. Don't hand-write site pages: improve the source file or the generator. Lesson docstrings
+  are published, so keep their `Academy:` / `Concepts:` / `Run:` shape.
 - `src/docshelp/{ingest,tools,console,tasks,server}.py`: RAG pipeline, tools, UTF-8 output, `poe` helpers
   (including the lesson runner), and the LangGraph Server entry point.
 - `lessons/p<part>_<topic>/<NN>_<topic>.py`: the curriculum. Part 8's lessons are SDK clients: `run(client, ...)`.
