@@ -14,9 +14,9 @@ to be built, in what order, and how to pick the work up in a new session.
 | 3 | LangGraph core (absorbs `stages/03`) | ✅ Merged (PR #7) |
 | 4 | LangGraph at scale + long-term memory | ✅ Merged (PR #8) |
 | 5 | LangSmith observability and evaluation (absorbs `stages/04`) | ✅ Merged (PR #9) |
-| 6 | Agent projects: ambient inbox and deep research | ✅ Shipped (branch `feat/curriculum-part6-agent-projects`) |
-| 7 | Deep Agents (plus dcode, Fleet and MDA twins) | ⏭️ Next |
-| 8 | Deployment (absorbs `stages/05`) | Planned |
+| 6 | Agent projects: ambient inbox and deep research | ✅ Merged (PR #10) |
+| 7 | Deep Agents (plus dcode, Fleet and MDA twins) | ✅ Shipped (branch `feat/curriculum-part7-deep-agents`) |
+| 8 | Deployment (absorbs `stages/05`) | ⏭️ Next |
 | 9 | Production monitoring and the improvement loop | Planned |
 
 Update this table in the same PR that ships a part.
@@ -202,24 +202,35 @@ Loop guards protect real small models:
 Part 8 deploys the inbox agent with cron and Agent Inbox. Ambient Agents M6 is mapped there.
 
 ### Part 7: Deep Agents (Intro to Deep Agents; dcode Essentials; LangSmith Fleet)
-New dependency: `deepagents>=0.7.21`. Add it to `pyproject.toml` dependencies, then run `uv lock`.
-1. `create_deep_agent`: overview and models.
-2. The system prompt.
-3. Tools, MCP, threads and HITL through `interrupt_on`.
-4. Filesystem backends: State, Filesystem, Store and Composite.
-5. Sandbox and local shell, restricted to a temp dir, with an explicit safety lesson.
-6. The interpreter.
-7. Summarization and offloading large tool results.
-8. Skills: `skills/*/SKILL.md` [a refund-policy skill and a log-analysis skill].
-9. `AGENTS.md`-style memory.
-10. Subagents: a team, dynamic subagents and async subagents.
+Shipped as built. Dependencies added: `deepagents` (0.7.24 locked) and `langchain-quickjs` (the WebAssembly
+JavaScript interpreter; pure-Python wheels). New data: `data/logs/sync-client.log`. New folders: `skills/`
+(refund-policy, log-analysis), `agents/` (templates) and `.deepagents/` (this repo's dcode config).
 
-Capstone: a "Support Ops analyst" deep agent reads `tickets.jsonl` and the docs, then writes an incident report.
+Shared code: `deep.py` and `agent_templates.py`. Every lesson's agent goes through `deep.deep_agent()`, which adds
+a model-call budget and replaces the built-in `general-purpose` subagent with a budgeted one.
+1. Running a deep agent: built-in tools, files in state, planning. In 0.7.x `write_todos` is opt-in via `TodoListMiddleware`.
+2. Models and the system prompt: a subagent on the fast model; the assembled prompt, captured by middleware; harness profiles.
+3. Tools and MCP: Nimbus Ops MCP tools, plus `my_account` with runtime context; `ainvoke`.
+4. Threads, checkpointer and HITL: per-thread files, `interrupt_on`, and path-scoped `FilesystemPermission(mode="interrupt")`.
+5. Backends: State, Filesystem, Store and Composite (`ops_backend`), with a deny permission on /docs/.
+6. LocalShellBackend in a temp dir: minimal env, timeout, an allowlist reviewer, and the safety checklist.
+7. Interpreter: `CodeInterpreterMiddleware` with programmatic tool calling.
+8. Offloading large tool results, and summarization that saves history to `/conversation_history/`.
+9. Skills: progressive disclosure from `skills/`.
+10. `AGENTS.md` memory in the Store, edited by the agent and shared across threads.
+11. Subagent team: declarative subagents, `response_format`, and a `CompiledSubAgent` (the 3.3 ReAct agent).
+12. Dynamic subagents: `task()` from interpreter code, with `responseSchema`.
+13. Async subagents and local deployment: the `LocalAgentServer` twin (in-process), or `--url` with `poe server`.
+    `langgraph.json` now also serves `docs_researcher` and `ops_analyst`.
+14. Capstone: `build_ops_analyst`, every feature in one agent, with an approval-gated report.
+15. Agents from templates (Fleet twin), with MDA's project structure mapped in the docstring.
+16. dcode: `.deepagents/` loaded by the SDK, read-only, with `.env` denied.
 
-Twins:
-- **dcode:** run the open-source `deepagents` CLI against this repo.
-- **Fleet:** agents from a YAML or Markdown template.
-- **Managed Deep Agents:** explained only.
+Reuse in later parts:
+- `build_ops_analyst(on_server=True)` and `build_docs_researcher`, already served. Part 8 covers the server's
+  store and checkpointer for them (Intro to LangSmith Deployment M4 "Memory in Deep Agents").
+- `LocalAgentServer` shows the client calls Part 8's SDK lessons make for real.
+- `agent_templates` for Part 9's A/B assistants if useful.
 
 ### Part 8: Deployment (Intro to LangGraph M6; Intro to LangSmith Deployment; LangSmith Essentials M3)
 Replaces `stages/05`.
@@ -231,7 +242,7 @@ Replaces `stages/05`.
 6. Custom routes through `http.app` [`/health`, `/tickets`].
 7. A Store `index` that uses fastembed through a `path:embed` function.
 8. Auth with `@auth.authenticate` and `@auth.on` [customers see only their own threads].
-9. The Part 7 deep agent as a second graph.
+9. The Part 7 deep agent on the server: it's already served as `ops_analyst`, so teach its memory with the server's Store.
 10. Agent Chat UI against localhost.
 11. Docker (`compose.yaml`).
 

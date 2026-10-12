@@ -19,7 +19,7 @@ with self-check questions.
 | 4 | **LangGraph at scale + long-term memory:** parallelism, subgraphs, map-reduce, a research assistant, the Store, memory schemas | `uv run poe lesson 4.1` … `4.9` | ✅ |
 | 5 | **LangSmith:** tracing, datasets, evaluators, experiments, pairwise, evals as tests, prompts, feedback, annotation | `uv run poe lesson 5.1` … `5.12` | ✅ |
 | 6 | **Agent projects:** an ambient support-inbox agent (triage, Agent Inbox, learning memory, evals) and a deep-research agent (scoping, parallel researchers, MCP, reports) | `uv run poe lesson 6.1` … `6.9` | ✅ |
-| 7 | **Deep Agents:** planning, filesystems, sandboxes, skills, memory, subagents | (planned) | |
+| 7 | **Deep Agents:** planning, filesystem backends, a shell and an interpreter, offloading, skills, `AGENTS.md` memory, subagent teams (sync, dynamic, async), agents from templates, dcode | `uv run poe lesson 7.1` … `7.16` | ✅ |
 | 8 | **Deployment:** LangGraph Server, SDK, assistants, double texting, custom routes, auth, Chat UI | `uv run poe stage5` for now | |
 | 9 | **Production:** cost, quality and security monitoring, online evals, the improvement loop | (planned) | |
 
@@ -46,6 +46,7 @@ The stages that predate the curriculum (4–5) keep working until their parts re
   - [Part 4: LangGraph at scale and long-term memory](#part-4-langgraph-at-scale-and-long-term-memory)
   - [Part 5: LangSmith observability and evaluation](#part-5-langsmith-observability-and-evaluation)
   - [Part 6: Agent projects (ambient inbox and deep research)](#part-6-agent-projects-ambient-inbox-and-deep-research)
+  - [Part 7: Deep Agents](#part-7-deep-agents)
   - [Stage 5: LangGraph Server and Studio](#stage-5-langgraph-server-and-studio)
 - [Project layout](#project-layout)
 - [Tests](#tests)
@@ -373,6 +374,27 @@ LangSmith UI.
 | 6.8 Research supervisor | parallel researchers delegated with `ConductResearch`, within limits | one turn starts several researchers at once |
 | 6.9 Capstone | request → scoping → parallel research → report in `data/reports/`, graded by an LLM judge | a cited report and its quality score |
 
+### Part 7: Deep Agents
+
+| Lesson | What you see | Look for |
+|---|---|---|
+| 7.1 Running a deep agent | `create_deep_agent` plans with `write_todos`, uses tools, and writes a triage note to its virtual filesystem | the plan and the file in the final state |
+| 7.2 Models and the system prompt | a subagent on the fast model, and the full assembled system prompt | your prompt first, then what the harness adds |
+| 7.3 Tools and MCP | DocsHelp tools and MCP status tools side by side, with runtime context | the customer's region decides which status is checked |
+| 7.4 Threads and HITL | two threads with their own files; publishing under `/published/` waits for approval | drafts are free, publishing needs a person |
+| 7.5 Filesystem backends | one tree from four backends: docs on disk (read-only), Store, reports on disk, state | where each file really lands; the denied edit |
+| 7.6 Sandbox and local shell | the agent writes and runs a Python script in a temp dir; an allowlist rejects other commands | the safety checklist in the docstring |
+| 7.7 Interpreter | one `eval` of JavaScript calls `list_tickets` and returns only the counts (`langchain-quickjs`) | the raw tickets never reach the model |
+| 7.8 Summarization and offload | a large log offloaded to a file and grepped; old turns summarized and saved to `/conversation_history/` | the model's context shrinks; the thread keeps everything |
+| 7.9 Skills | `skills/refund-policy` and `skills/log-analysis`, listed in the prompt and read on demand | only names and descriptions are always in context |
+| 7.10 Memory | the agent edits `/memories/AGENTS.md` once; a new thread follows the new rule | memory shared across threads through the Store |
+| 7.11 Subagent team | a ticket analyst (structured output), a docs researcher, and the 3.3 ReAct agent as a compiled subagent | each subagent sees only its task |
+| 7.12 Dynamic subagents | code in the interpreter triages every open ticket with parallel subagents | typed results filtered in code |
+| 7.13 Async subagents | background research on a local stand-in server, or on `uv run poe server` with `--url` | the main agent answers while the task runs |
+| 7.14 Capstone | the Support Ops analyst: plan, delegate, use a skill, write `data/reports/windows-sync.md` after approval, learn a rule | every Part 7 feature in one agent |
+| 7.15 Agents from templates | `agents/*.md` templates (a Fleet twin) become a refund desk and an inbox watcher | one builder, many agents; MDA's layout explained |
+| 7.16 dcode project config | `.deepagents/` (memory, skill, subagent, `.mcp.json`) loaded with the SDK | the folder dcode reads is plain deep-agent config |
+
 ### Stage 5: LangGraph Server and Studio
 ```bash
 uv run poe server       # terminal 1: API on :2024, opens Studio in your browser
@@ -393,6 +415,10 @@ data/eval_dataset.json  9 question / reference-answer / expected-source examples
 data/changelog.md       release notes; data/sample_tickets.jsonl: past tickets (Part 4)
 data/triage_dataset.json  support emails labelled needs_ticket (lesson 5.8)
 data/inbox/             the support inbox for the ambient agent, with evaluation labels (Part 6)
+data/logs/              a customer's sync client log (Part 7)
+skills/                 deep-agent skills: refund-policy, log-analysis (Part 7)
+agents/                 agent templates, the Fleet twin (lesson 7.15)
+.deepagents/            Deep Agents Code (dcode) project config: memory, skill, subagent, MCP (lesson 7.16)
 src/docshelp/
   config.py             Settings (from env vars), get_llm / structured_llm facades, local fastembed embeddings
   providers/
@@ -417,6 +443,8 @@ src/docshelp/
   ambient.py            the ambient support-inbox agent, Agent Inbox protocol, learned preferences (Part 6)
   deep_research.py      scoping, researcher, supervisor and the full deep-research system (Part 6)
   docs_mcp_server.py    an MCP server exposing data/docs/ as files (lesson 6.7)
+  deep.py               Deep Agents: tools, backends, subagent team, local agent server, the Ops analyst (Part 7)
+  agent_templates.py    agents from Markdown templates and dcode project folders (lessons 7.15-7.16)
   graph.py              the LangGraph support graph, Part 3 capstone (dependencies injectable)
   server.py             graphs served by LangGraph Server / Studio
   console.py            UTF-8 terminal output on every OS
@@ -437,8 +465,8 @@ compose.yaml            app, server and optional ollama services
 
 ```bash
 uv sync --all-extras    # once, so the provider tests can build each vendor's model class
-uv run poe test         # unit + integration, ~1 min
-uv run poe e2e          # end-to-end, ~2 min
+uv run poe test         # unit + integration, ~2 min
+uv run poe e2e          # end-to-end, ~10 min
 ```
 Both suites run offline with no API keys.
 

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "nimbus_docs": {
+      "command": "uv",
+      "args": ["run", "python", "-m", "docshelp.docs_mcp_server"]
+    }
+  }
+}
