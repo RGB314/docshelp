@@ -49,6 +49,8 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# A test stuck this long dumps every thread's stack to stderr, so a hang in CI shows where it is.
+faulthandler_timeout = 300
 markers = [
     "e2e: end-to-end tests that run lessons as processes and start a real LangGraph Server (`poe e2e`)",
 ]

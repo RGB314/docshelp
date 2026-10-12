@@ -52,6 +52,8 @@ def generate_dockerfile(target: Path, config: Path = PROJECT_ROOT / "langgraph.j
         [langgraph_cli(), "dockerfile", "-c", str(config), str(target)],
         check=True,
         capture_output=True,
+        stdin=subprocess.DEVNULL,  # never wait for input
+        timeout=120,
         text=True,
         encoding="utf-8",
         errors="replace",
