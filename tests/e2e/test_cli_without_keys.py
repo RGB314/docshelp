@@ -4,7 +4,7 @@ import pytest
 
 from docshelp.tasks import find_lessons
 
-from .helpers import PROVIDER_KEYS, base_env, free_port, run_evals, run_lesson, run_stage
+from .helpers import PROVIDER_KEYS, base_env, free_port, run_evals, run_lesson
 
 pytestmark = pytest.mark.e2e
 
@@ -77,10 +77,12 @@ def test_unknown_lesson_lists_the_lessons():
     assert "1.1" in result.stderr
 
 
-def test_stage5_without_a_server_explains_how_to_start_it():
-    env = base_env(LANGGRAPH_URL=f"http://127.0.0.1:{free_port()}")
-    result = run_stage("05_langgraph_server.py", env, timeout=60)
+@pytest.mark.parametrize(("code", "var", "task"), [("8.3", "LANGGRAPH_URL", "poe server"),
+                                                   ("8.10", "LANGGRAPH_AUTH_URL", "poe server-auth")])
+def test_server_lessons_without_a_server_explain_how_to_start_it(code, var, task):
+    env = base_env(DOCSHELP_PROVIDER="groq", GROQ_API_KEY="not-used", **{var: f"http://127.0.0.1:{free_port()}"})
+    result = run_lesson(code, env, timeout=120)
 
     assert result.returncode == 1
-    assert "poe server" in result.stderr
+    assert task in result.stderr
     assert "Traceback" not in result.stderr

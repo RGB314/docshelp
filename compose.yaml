@@ -4,7 +4,8 @@
 #   docker compose run --rm app poe doctor          # check your provider setup
 #   docker compose run --rm app poe lesson 1.1      # any lesson (`poe lessons` lists them), `poe evals`, `poe test`
 #   docker compose up -d server                     # LangGraph Server + Studio on http://127.0.0.1:2024
-#   docker compose run --rm app poe stage5          # SDK client talking to that server
+#   docker compose run --rm app poe lesson 8.3      # Part 8's lessons are clients of that server
+#   docker compose up -d server-auth                # the same server with auth (lesson 8.10), port 2025
 #   docker compose --profile ollama up -d ollama    # optional: free local models in a container
 #
 # Keys and settings come from your .env file (optional) and/or your shell environment.
@@ -20,6 +21,7 @@ x-docshelp: &docshelp
   environment:
     # Inside containers, "localhost" is the container itself, so reach other services by name.
     LANGGRAPH_URL: http://server:2024
+    LANGGRAPH_AUTH_URL: http://server-auth:2025
     # Default: the `ollama` service below. Ollama running on your host instead?
     # Set DOCKER_OLLAMA_BASE_URL=http://host.docker.internal:11434
     OLLAMA_BASE_URL: ${DOCKER_OLLAMA_BASE_URL:-http://ollama:11434}
@@ -40,6 +42,18 @@ services:
       - "2024:2024"
     healthcheck:  # lets `docker compose up -d --wait server` block until the API answers
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:2024/ok')"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  server-auth:
+    <<: *docshelp
+    command: ["langgraph", "dev", "--config", "langgraph.auth.json", "--host", "0.0.0.0", "--port", "2025", "--no-browser", "--no-reload"]
+    ports:
+      - "2025:2025"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:2025/ok')"]
       interval: 5s
       timeout: 5s
       retries: 30

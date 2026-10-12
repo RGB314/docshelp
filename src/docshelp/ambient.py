@@ -186,7 +186,9 @@ def build_inbox_agent(
     memory: bool = False,
     checkpointer: Checkpointer | None = None,
     store: BaseStore | None = None,
+    on_server: bool = False,
 ):
+    """The ambient inbox agent. `on_server=True` leaves persistence to LangGraph Server (lesson 8.12)."""
     research_tools = (support_tools.make_search_docs(retriever), search_changelog_tool, support_tools.quote_price)
     research = {t.name: t for t in research_tools}
     actions = [support_tools.send_reply, open_ticket, done, *([ask_human] if hitl else [])]
@@ -293,7 +295,7 @@ def build_inbox_agent(
     builder.add_node(triage_review)  # only reached when hitl=True (triage's Command type names it)
     builder.add_edge(START, "triage")
     builder.add_conditional_edges("respond", route)
-    if hitl and checkpointer is None:
+    if hitl and checkpointer is None and not on_server:
         checkpointer = InMemorySaver()  # interrupts need somewhere to save the paused run
     return builder.compile(checkpointer=checkpointer, store=store, name="inbox_agent")
 

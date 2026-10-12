@@ -17,7 +17,7 @@ import sys
 
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP("nimbus-ops")
+mcp = FastMCP("nimbus-ops", log_level="WARNING")  # FastMCP configures logging on creation: keep importers quiet
 
 # Pretend live data. A real server would query the monitoring system.
 STATUS = {

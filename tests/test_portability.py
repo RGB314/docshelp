@@ -39,9 +39,11 @@ def compose() -> dict:
 
 def test_compose_defines_app_server_and_optional_ollama():
     services = compose()["services"]
-    assert {"app", "server", "ollama"} <= set(services)
+    assert {"app", "server", "server-auth", "ollama"} <= set(services)
     assert services["ollama"]["profiles"] == ["ollama"]
     assert "2024:2024" in services["server"]["ports"]
+    assert "2025:2025" in services["server-auth"]["ports"]
+    assert "langgraph.auth.json" in services["server-auth"]["command"]
 
 
 def test_compose_reads_env_file_without_requiring_it():
@@ -54,12 +56,14 @@ def test_compose_reads_env_file_without_requiring_it():
 def test_app_container_talks_to_the_server_and_ollama_by_service_name():
     env = compose()["services"]["app"]["environment"]
     assert env["LANGGRAPH_URL"] == "http://server:2024"
+    assert env["LANGGRAPH_AUTH_URL"] == "http://server-auth:2025"
     assert "ollama:11434" in env["OLLAMA_BASE_URL"]
 
 
 def test_server_has_a_healthcheck_so_compose_can_wait_for_it():
-    healthcheck = compose()["services"]["server"]["healthcheck"]
-    assert "2024/ok" in " ".join(healthcheck["test"])
+    for service, port in (("server", 2024), ("server-auth", 2025)):
+        healthcheck = compose()["services"][service]["healthcheck"]
+        assert f"{port}/ok" in " ".join(healthcheck["test"])
 
 
 def workflow() -> dict:
@@ -81,7 +85,8 @@ def test_ci_runs_docker_e2e_with_a_real_local_model():
     assert "--profile ollama" in steps
     assert "DOCSHELP_E2E_MODEL" in steps
     assert "poe e2e" in steps
-    assert "up -d --wait server" in steps and "poe stage5" in steps
+    assert "up -d --wait server server-auth" in steps
+    assert "poe lesson 8.3" in steps and "poe lesson 8.10" in steps  # Part 8 clients over the compose network
 
 
 def test_ci_triggers_on_pull_requests_to_main():

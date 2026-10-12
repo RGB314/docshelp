@@ -53,7 +53,7 @@ def test_poethepoet_is_a_dev_dependency():
 
 def test_poe_tasks_cover_the_whole_workflow():
     poe_tasks = PYPROJECT["tool"]["poe"]["tasks"]
-    for name in ("init-env", "doctor", "test", "server", "lessons", "lesson", "evals", "stage5"):
+    for name in ("init-env", "doctor", "test", "server", "server-auth", "lessons", "lesson", "evals"):
         assert name in poe_tasks, f"missing poe task {name!r}"
 
 
@@ -97,10 +97,11 @@ def test_unit_and_e2e_suites_are_separate_tasks():
     assert any(m.startswith("e2e:") for m in markers)
 
 
-@pytest.mark.parametrize("n", range(5, 6))  # stages 1-4 became Parts 1, 3 and 5; stage 5 follows in Part 8
-def test_stage_tasks_point_at_existing_scripts(n):
-    task = PYPROJECT["tool"]["poe"]["tasks"][f"stage{n}"]
-    cmd = task["cmd"] if isinstance(task, dict) else task
-    script = cmd.split()[-1]
-    assert (ROOT / script).is_file()
-    assert "\\" not in cmd  # forward slashes work in every shell
+def test_the_stages_are_gone_and_the_server_tasks_serve_the_repo_configs():
+    poe_tasks = PYPROJECT["tool"]["poe"]["tasks"]
+    assert not (ROOT / "stages").exists()  # Parts 1, 3, 5 and 8 replaced stages 1-5
+    assert not any(name.startswith("stage") for name in poe_tasks)
+    assert poe_tasks["server"]["cmd"] == "langgraph dev"
+    auth = poe_tasks["server-auth"]["cmd"]
+    assert "--config langgraph.auth.json" in auth and "--port 2025" in auth
+    assert (ROOT / "langgraph.auth.json").is_file()
