@@ -224,6 +224,24 @@ def test_6_8_supervisor_runs_researchers_in_parallel_within_limits(lesson, fake_
     assert len(skipped) == 1
 
 
+def test_6_8_malformed_tool_calls_get_an_error_reply_instead_of_crashing(lesson, fake_retriever):
+    # Small models sometimes call a tool without its required arguments (seen with a 0.5B model in CI).
+    bad = AIMessage(
+        "",
+        tool_calls=[
+            {"name": "ConductResearch", "args": {}, "id": "c1", "type": "tool_call"},
+            {"name": "think", "args": {}, "id": "c2", "type": "tool_call"},
+        ],
+    )
+    supervisor = FakeChatModel(replies=[bad, COMPLETE])
+
+    result = lesson("6.8").run(supervisor, fake_retriever, researcher_llm=FakeChatModel(), max_concurrent=2)
+
+    errors = [m.text for m in result["messages"] if isinstance(m, ToolMessage)]
+    assert len(errors) == 2 and all(e.startswith("Error:") for e in errors)
+    assert result["notes"] == []  # no researcher ran
+
+
 def test_6_9_capstone_deep_research_from_request_to_graded_report(lesson, fake_retriever, tmp_path):
     from docshelp.deep_research import ClarifyWithUser, ResearchBrief
 
