@@ -23,7 +23,7 @@ Run `uv run poe lessons` to list the lessons. Run one with `uv run poe lesson <n
 | 4 | LangGraph at scale and long-term memory: parallelism, subgraphs, map-reduce, the Store, memory schemas | 3 | ✅ shipped |
 | 5 | LangSmith: tracing, datasets, evaluators, experiments, prompt engineering, feedback, annotation | 1–4 | ✅ shipped |
 | 6 | Agent projects: an ambient support-inbox agent and a deep-research agent | 1–5 | ✅ shipped |
-| 7 | Deep Agents: planning, filesystems, sandboxes, skills, memory, subagents, agents-from-config | 1–6 | planned |
+| 7 | Deep Agents: planning, filesystems, sandboxes, skills, memory, subagents, agents-from-config | 1–6 | ✅ shipped |
 | 8 | Deployment: LangGraph Server, SDK, assistants, double texting, custom routes, auth, Store, Chat UI | 3–7 | planned |
 | 9 | Production: cost, quality, security monitoring, online evals, automations, and the improvement loop | 5, 8 | planned |
 
@@ -184,27 +184,35 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 
 | Academy lesson | Covered by |
 |---|---|
-| M1 Overview, Running a Deep Agent, Models, The System Prompt, Tools, MCP | Part 7 (planned) |
-| M1 Messages, Threads, and Checkpointers; HITL; Test Your Skills | Part 7 (planned) |
-| M2 The Deep Agent Environment, Filesystem Backends, Sandboxes and LocalShell, Interpreter | Part 7 (planned) |
-| M3 Summarization and Offload, Skills, Memory | Part 7 (planned) |
-| M4 Delegation, Building a Subagent Team, Dynamic Subagents | Part 7 (planned) |
-| M5 Local Deployment, The Sales Assistant, Asynchronous Subagents, The Advanced Sales Assistant | Part 7 (planned) |
-| M6 What is MDA?, MDA Project Structure | Part 7 (planned) |
+| M1 Overview, Running a Deep Agent | `lessons/p7_deep_agents/01_running_a_deep_agent.py` (harness: `src/docshelp/deep.py`) |
+| M1 Models, The System Prompt | `lessons/p7_deep_agents/02_models_and_system_prompt.py` |
+| M1 Tools, MCP | `lessons/p7_deep_agents/03_tools_and_mcp.py` |
+| M1 Messages, Threads, and Checkpointers; HITL; Test Your Skills | `lessons/p7_deep_agents/04_threads_and_hitl.py` (and the Part 7 self-check below) |
+| M2 The Deep Agent Environment, Filesystem Backends | `lessons/p7_deep_agents/05_filesystem_backends.py` |
+| M2 Sandboxes and LocalShell | `lessons/p7_deep_agents/06_sandbox_and_local_shell.py` |
+| M2 Interpreter | `lessons/p7_deep_agents/07_interpreter.py` |
+| M3 Summarization and Offload | `lessons/p7_deep_agents/08_summarization_and_offload.py` |
+| M3 Skills | `lessons/p7_deep_agents/09_skills.py` (skills: `skills/`) |
+| M3 Memory | `lessons/p7_deep_agents/10_memory.py` |
+| M4 Delegation, Building a Subagent Team | `lessons/p7_deep_agents/11_subagent_team.py` |
+| M4 Dynamic Subagents | `lessons/p7_deep_agents/12_dynamic_subagents.py` |
+| M5 Local Deployment, Asynchronous Subagents | `lessons/p7_deep_agents/13_async_subagents.py` (served graphs: `src/docshelp/server.py`) |
+| M5 The Sales Assistant, The Advanced Sales Assistant (projects) | `lessons/p7_deep_agents/14_capstone_support_ops_analyst.py` (the same build as a Support Ops analyst) |
+| M6 What is MDA?, MDA Project Structure | `lessons/p7_deep_agents/15_agents_from_templates.py` (explained in the docstring, mapped onto this repo) |
 
 ### dcode Essentials
 
 | Academy lesson | Covered by |
 |---|---|
-| Welcome to dcode, dcode Essentials, Goals | Part 7 (planned) |
-| Skills, MCP, Plugins, and Marketplaces; Configuring Subagents; dcode for Enterprise | Part 7 (planned) |
+| Welcome to dcode, dcode Essentials, Goals | `lessons/p7_deep_agents/16_dcode_project_config.py` |
+| Skills, MCP, Plugins, and Marketplaces; Configuring Subagents; dcode for Enterprise | `lessons/p7_deep_agents/16_dcode_project_config.py` (this repo's config: `.deepagents/`) |
 
 ### LangSmith Fleet (no-code agents)
 
 | Academy lesson | Covered by |
 |---|---|
-| L1 Building An Agent, L2 Human-In-The-Loop, L3 What Can Agents Do? | Part 7 (planned) |
-| L4 Skills, L5 MCP, L6 Ambient Agents, L7 Sub-Agents, L8 Computer Use (Sandboxes), L9 Templates | Part 7 (planned) |
+| L1 Building An Agent, L2 Human-In-The-Loop, L3 What Can Agents Do? | `lessons/p7_deep_agents/15_agents_from_templates.py` (local twin; templates: `agents/`, builder: `src/docshelp/agent_templates.py`) |
+| L4 Skills, L5 MCP, L6 Ambient Agents, L7 Sub-Agents, L8 Computer Use (Sandboxes), L9 Templates | `lessons/p7_deep_agents/15_agents_from_templates.py` (computer use: `lessons/p7_deep_agents/06_sandbox_and_local_shell.py`) |
 
 ### Introduction to LangSmith Deployment
 
@@ -600,4 +608,64 @@ focused, and the topics can run in parallel without depending on each other.
 `max_tool_rounds` per researcher (in `should_continue`), `max_concurrent` researchers per supervisor turn (extra
 `ConductResearch` calls are told to wait), and `max_iterations` supervisor turns (in `supervisor_tools`). The
 scoping step also stops after a few clarifying questions.
+</details>
+
+### Part 7 self-check
+
+<details>
+<summary>1. What does <code>create_deep_agent</code> add on top of <code>create_agent</code>, and why does each piece matter for long tasks?</summary>
+
+A filesystem (`ls`, `read_file`, `write_file`, `edit_file`, `glob`, `grep`) to keep notes and drafts outside the
+context window; `task` to hand self-contained work to subagents with their own context; summarization that offloads
+old history to a file; and patched-up tool calls. Planning (`write_todos`), skills, memory, a shell and an
+interpreter are opt-in. Together they let an agent work for many steps without its context overflowing.
+</details>
+
+<details>
+<summary>2. Files go to <code>/docs/</code>, <code>/memories/</code>, <code>/reports/</code> and <code>/scratch.md</code>. Where does each end up in the capstone, and how long does it last?</summary>
+
+`CompositeBackend` routes by prefix: `/docs/` to the docs folder on disk (and a deny permission makes it read-only),
+`/memories/` to the LangGraph Store (every thread, as long as the store lasts), `/reports/` to `data/reports/` on disk
+(permanent), and anything else to the thread's state (checkpointed with the thread, gone in a new one).
+</details>
+
+<details>
+<summary>3. Why is <code>LocalShellBackend</code> with <code>virtual_mode=True</code> still not a sandbox, and what makes running commands acceptable?</summary>
+
+`virtual_mode` only confines the file tools. Shell commands run on the host with your account's permissions. Make it
+acceptable with a throwaway directory holding only the needed files, a minimal environment (no keys), a timeout and
+output cap, an approval or allowlist on every command, and in production a real remote sandbox.
+</details>
+
+<details>
+<summary>4. When would you use the interpreter rather than plain tool calls, and what's the catch?</summary>
+
+When the work is loops, joins or aggregation over many tool results: one `eval` calls the tools from code and returns
+only the result, saving model turns and context. The catch: tools called from code, and subagents dispatched with
+`task()`, skip `interrupt_on`, so expose only tools that are safe without approval.
+</details>
+
+<details>
+<summary>5. Skills, memory and tools all shape behaviour. What goes where?</summary>
+
+Tools do things. Skills are how-to instructions loaded on demand: only their names and descriptions sit in the
+prompt. Memory (`AGENTS.md`) is always in the prompt, so it holds short standing rules and facts, and the agent can
+edit it when it learns one.
+</details>
+
+<details>
+<summary>6. Sync, dynamic and async subagents: what is each for?</summary>
+
+A `task` subagent runs to completion while the main agent waits, with a fresh context and only its answer coming
+back. Dynamic subagents are dispatched from interpreter code, in loops and in parallel, with typed results. Async
+subagents run on an Agent Protocol server in the background; the main agent gets a task id and checks, updates or
+cancels it later.
+</details>
+
+<details>
+<summary>7. What do a Fleet template, an MDA project and a dcode <code>.deepagents/</code> folder have in common?</summary>
+
+They describe an agent as configuration (instructions, tools, skills, subagents, approvals, MCP servers, triggers)
+that a harness turns into a running deep agent. People review files, not code, and the same concepts from this part
+apply to all three.
 </details>

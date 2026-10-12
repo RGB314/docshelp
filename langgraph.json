@@ -3,7 +3,9 @@
   "dependencies": ["."],
   "graphs": {
     "docshelp": "./src/docshelp/server.py:graph",
-    "react_agent": "./src/docshelp/server.py:react_agent"
+    "react_agent": "./src/docshelp/server.py:react_agent",
+    "docs_researcher": "./src/docshelp/server.py:docs_researcher",
+    "ops_analyst": "./src/docshelp/server.py:ops_analyst"
   },
   "env": ".env",
   "python_version": "3.12"

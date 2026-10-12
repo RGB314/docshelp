@@ -8,9 +8,11 @@ license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = [
     "agentevals>=0.0.9",
+    "deepagents>=0.7.21",
     "fastembed>=0.8.1",
     "langchain>=1.4.2",
     "langchain-mcp-adapters>=0.3.2",
+    "langchain-quickjs>=0.2.0",
     "langchain-text-splitters>=1.1.2",
     "langgraph>=1.2.12",
     "langgraph-checkpoint-sqlite>=3.1.1",
@@ -54,6 +56,8 @@ filterwarnings = [
     "ignore:Importing Send from langgraph.constants is deprecated",
     # langsmith's evaluator-name detection mentions ast.Str for older Pythons; harmless.
     "ignore:ast.Str is deprecated:DeprecationWarning",
+    # The interpreter middleware (lessons 7.7, 7.12) is marked beta; the lessons say so.
+    "ignore:The class `CodeInterpreterMiddleware` is in beta",
 ]
 
 # Cross-shell task runner: `uv run poe <task>` behaves the same in PowerShell, cmd, Git Bash, macOS and Linux.

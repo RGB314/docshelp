@@ -22,8 +22,8 @@ Every command works the same in PowerShell, cmd, Git Bash, macOS and Linux. Don'
 |---|---|
 | Install (all providers) | `uv sync --all-extras` (plain `uv sync` removes extras) |
 | List tasks | `uv run poe` |
-| Unit + integration tests (~1 min, offline) | `uv run poe test` |
-| End-to-end tests (~2 min, offline) | `uv run poe e2e` |
+| Unit + integration tests (~2 min, offline) | `uv run poe test` |
+| End-to-end tests (~10 min, offline; every lesson runs as a process) | `uv run poe e2e` |
 | Real-model E2E (no keys) | `DOCSHELP_E2E_MODEL=qwen2.5:0.5b uv run poe e2e` with Ollama running and the model pulled |
 | Provider setup check | `uv run poe doctor` |
 | List / run lessons | `uv run poe lessons`, `uv run poe lesson 1.6` (extra args are passed to the lesson) |
@@ -50,6 +50,11 @@ Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both mu
 - `src/docshelp/{observability,evals,prompts}.py`: Part 5's tracing (LangSmith or a local twin), evaluation helpers and
   prompt hub. Lessons that trace or evaluate must work without a LangSmith key.
 - `src/docshelp/{ambient,deep_research,docs_mcp_server}.py`: Part 6's inbox agent, deep-research system and docs MCP server.
+- `src/docshelp/{deep,agent_templates}.py`: Part 7's deep-agent harness pieces (tools, backends, subagent team, local
+  agent server, the Ops analyst) and agents built from templates or a dcode folder. Every deep agent in a lesson gets
+  a model-call budget (`deep.budget`), because deep agents otherwise allow ~10,000 steps.
+- `skills/`, `agents/`, `.deepagents/`: deep-agent skills, agent templates (lesson 7.15), and this repo's Deep Agents
+  Code config (lesson 7.16). Lessons and tests read them, so keep them consistent with the code.
 - `src/docshelp/{ingest,tools,console,tasks,server}.py`: RAG pipeline, tools, UTF-8 output, `poe` helpers
   (including the lesson runner), and the LangGraph Server entry point.
 - `lessons/p<part>_<topic>/<NN>_<topic>.py`: the curriculum. `stages/`: stage 5, until Part 8 replaces it.
