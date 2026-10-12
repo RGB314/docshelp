@@ -9,7 +9,8 @@ of a different toy project per course, and everything runs at **zero cost**: loc
 free-tier cloud models optionally, and no paid LangSmith features required.
 
 [CURRICULUM.md](CURRICULUM.md) maps every Academy lesson to the lesson here that teaches it, and ends each part
-with self-check questions.
+with self-check questions. **The [course website](https://rgb314.github.io/docshelp-langchain-curriculum/)** presents the same material for reading: every
+lesson's concepts by part, the curriculum map, and the self-checks as collapsible questions.
 
 | Part | Theme | Run | Status |
 |---|---|---|---|
@@ -272,6 +273,7 @@ Embeddings run locally on your CPU (`BAAI/bge-small-en-v1.5` via fastembed). The
 | Tests | `uv run poe test` | `docker compose run --rm app poe test` |
 | Provider check | `uv run poe doctor` | `docker compose run --rm app poe doctor` |
 | Monitoring dashboard (Part 9) | `uv run poe dashboard` | `docker compose run --rm app poe dashboard` |
+| The course website (preview / build) | `uv run poe site-serve` / `uv run poe site` | |
 
 Lessons live in `lessons/p<part>_<topic>/<NN>_<topic>.py`. Each one opens with a docstring naming the Academy
 lessons it covers and the concepts it teaches. Each has a `run()` the tests drive with a scripted model and a
@@ -501,6 +503,7 @@ to your project, and each lesson names the LangSmith feature it mirrors.
 | [`src/docshelp/insights.py`](src/docshelp/insights.py), [`src/docshelp/dashboard.py`](src/docshelp/dashboard.py), [`src/docshelp/engine.py`](src/docshelp/engine.py) | the Insights, Dashboards and Engine twins (lessons 9.8-9.11) |
 | [`src/docshelp/console.py`](src/docshelp/console.py) | UTF-8 terminal output on every OS |
 | [`src/docshelp/tasks.py`](src/docshelp/tasks.py) | `init-env`, `doctor` and the lesson runner behind `poe` |
+| [`src/docshelp/site.py`](src/docshelp/site.py) | the course website: the repo's Markdown plus a page per part from the lesson docstrings ([GitHub Pages](https://rgb314.github.io/docshelp-langchain-curriculum/)) |
 | [`src/docshelp/maintenance.py`](src/docshelp/maintenance.py) | `uv run poe maintenance`: the periodic health report ([MAINTENANCE.md](MAINTENANCE.md)) |
 
 **Curriculum, tests and project files**
@@ -514,7 +517,7 @@ to your project, and each lesson names the LangSmith feature it mirrors.
 | [`pyproject.toml`](pyproject.toml) | dependencies, provider extras, and the `poe` task definitions |
 | [`Dockerfile`](Dockerfile), [`compose.yaml`](compose.yaml) | the container image, and the app, server, server-auth and optional ollama services |
 | [`.devcontainer/`](.devcontainer/) | VS Code Dev Container / GitHub Codespaces config |
-| [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | CI: tests on three OSes, and every lesson against a real local model in Docker |
+| [`.github/workflows/ci.yml`](.github/workflows/ci.yml), [`.github/workflows/pages.yml`](.github/workflows/pages.yml) | CI: tests on three OSes and every lesson against a real local model in Docker; the website, built on PRs and published from `main` |
 | [`MAINTENANCE.md`](MAINTENANCE.md), [`.claude/skills/maintain-curriculum/SKILL.md`](.claude/skills/maintain-curriculum/SKILL.md) | the periodic maintenance routine, and the Claude Code skill that runs it |
 | [`.gitattributes`](.gitattributes) | LF line endings on every OS |
 
