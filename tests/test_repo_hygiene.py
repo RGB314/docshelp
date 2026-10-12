@@ -59,6 +59,7 @@ def test_claude_code_local_files_are_ignored_but_shared_settings_are_not():
         assert git_ignores(path), f"{path} should be git-ignored"
     # ...while team-shared Claude Code config stays committable.
     assert not git_ignores(".claude/settings.json")
+    assert not git_ignores(".claude/skills/maintain-curriculum/SKILL.md")  # project skills are shared too
 
 
 def env_example() -> dict[str, str]:
@@ -101,6 +102,14 @@ def test_agent_instructions_exist_and_claude_md_reuses_agents_md():
     assert "@AGENTS.md" in claude
     for must_mention in ("uv run poe test", "uv run poe e2e", "DOCSHELP_PROVIDER", "pull request"):
         assert must_mention in agents
+
+
+@pytest.mark.parametrize("doc", ["README.md", "AGENTS.md", "MAINTENANCE.md", "ROADMAP.md"])
+def test_relative_links_in_docs_point_at_real_files(doc):
+    text = (ROOT / doc).read_text(encoding="utf-8")
+    targets = re.findall(r"\]\(([^)#\s]+)(?:#[^)]*)?\)", text)
+    broken = [t for t in targets if "://" not in t and not t.startswith("mailto:") and not (ROOT / t).exists()]
+    assert broken == []
 
 
 def test_license_is_declared():

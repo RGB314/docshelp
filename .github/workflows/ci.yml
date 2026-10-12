@@ -41,10 +41,22 @@ jobs:
         run: uv run poe e2e
 
   # The Docker path end to end, including every lesson against a real local model (Ollama), still keyless.
-  docker-e2e:
-    name: docker-e2e
+  # The real-model run takes ~45 minutes in one job, so it's split by part into parallel shards of ~12-15 minutes,
+  # balanced on measured times. The `full` shard also runs
+  # the unit tests, the keyless e2e tests and the compose-stack check, which only need to run once.
+  docker-e2e-shard:
+    name: docker-e2e (parts ${{ matrix.parts }})
     runs-on: ubuntu-latest
-    timeout-minutes: 90  # the real-model e2e step runs every lesson (~35 min before Part 9's eleven)
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - parts: "7"
+          - parts: "9"
+          - parts: "1,2,3,5,6"
+          - parts: "4,8"
+            full: true
     env:
       E2E_MODEL: qwen2.5:0.5b
     steps:
@@ -64,6 +76,7 @@ jobs:
         run: docker compose build
 
       - name: Unit and integration tests in the container
+        if: matrix.full
         run: docker compose run --rm -T app poe test
 
       - name: Start Ollama and pull a small model
@@ -72,10 +85,13 @@ jobs:
           for i in $(seq 1 30); do docker compose exec -T ollama ollama list && break; sleep 2; done
           docker compose exec -T ollama ollama pull "$E2E_MODEL"
 
-      - name: End-to-end tests in the container, including every lesson against the real model
-        run: docker compose run --rm -T -e DOCSHELP_E2E_MODEL="$E2E_MODEL" app poe e2e -v -rs
+      - name: End-to-end tests in the container, these parts' lessons against the real model
+        run: |
+          if [ "${{ matrix.full }}" = "true" ]; then tests=""; else tests="tests/e2e/test_real_model.py tests/e2e/test_real_model_auth.py"; fi
+          docker compose run --rm -T -e DOCSHELP_E2E_MODEL="$E2E_MODEL" -e DOCSHELP_E2E_PARTS="${{ matrix.parts }}" app poe e2e $tests -v -rs
 
       - name: Compose stack - LangGraph Server services + Part 8 clients over the compose network
+        if: matrix.full
         run: |
           docker compose up -d --wait server server-auth
           docker compose run --rm -T app poe lesson 8.3
@@ -88,3 +104,13 @@ jobs:
       - name: Tear down
         if: always()
         run: docker compose --profile ollama down -v
+
+  # One check for branch protection: it requires `docker-e2e`, which passes only if every shard passed.
+  docker-e2e:
+    name: docker-e2e
+    needs: docker-e2e-shard
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every shard passed
+        run: test "${{ needs.docker-e2e-shard.result }}" = "success"

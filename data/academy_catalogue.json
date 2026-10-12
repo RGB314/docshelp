@@ -1,0 +1,12 @@
+{
+  "_note": "Academy courses already reviewed and mapped in CURRICULUM.md, by the slug in their URL (academy.langchain.com/courses/<slug>). `uv run poe maintenance` reports catalogue links that aren't listed here. Add a course only after mapping it.",
+  "checked": "2026-10-12",
+  "courses": {
+    "foundation-introduction-to-deepagents": "Introduction to Deep Agents",
+    "foundation-introduction-to-langchain-python": "Introduction to LangChain (Python)",
+    "intro-to-langgraph": "Introduction to LangGraph (Python)",
+    "langsmith-engine": "Autonomous Agent Improvement with LangSmith Engine",
+    "production-monitoring": "Monitoring Production Agents",
+    "quickstart-langsmith-essentials": "Quickstart: LangSmith Essentials"
+  }
+}

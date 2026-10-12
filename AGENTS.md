@@ -30,6 +30,7 @@ Every command works the same in PowerShell, cmd, Git Bash, macOS and Linux. Don'
 | Evals against a real model (not offline) | `uv run poe evals` (lesson 5.9) |
 | LangGraph Server for Part 8 | `uv run poe server` (:2024); with auth: `uv run poe server-auth` (:2025) |
 | Monitoring dashboard (Part 9) | `uv run poe dashboard` (writes `data/reports/dashboard.html`) |
+| Periodic maintenance | `uv run poe maintenance`, then follow `MAINTENANCE.md` (Claude Code: `/maintain-curriculum`) |
 | Docker equivalents | `docker compose build`, then `docker compose run --rm app poe <task>` |
 
 Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both must pass.
