@@ -81,17 +81,22 @@ def traced(
 # --- reading run trees ----------------------------------------------------------------------------
 
 
+def usage(run: RunTree) -> dict:
+    """An LLM run's token usage as the chat model reported it: input_tokens, output_tokens, total_tokens."""
+    if run.run_type != "llm" or not run.outputs:
+        return {}
+    found = run.outputs.get("usage_metadata")
+    if found is None:
+        try:
+            found = run.outputs["generations"][0][0]["message"]["kwargs"].get("usage_metadata")
+        except (KeyError, IndexError, TypeError):
+            found = None
+    return found or {}
+
+
 def tokens(run: RunTree) -> int | None:
     """Total tokens of an LLM run, from the usage metadata the chat model reported."""
-    if run.run_type != "llm" or not run.outputs:
-        return None
-    usage = run.outputs.get("usage_metadata")
-    if usage is None:
-        try:
-            usage = run.outputs["generations"][0][0]["message"]["kwargs"].get("usage_metadata")
-        except (KeyError, IndexError, TypeError):
-            usage = None
-    return (usage or {}).get("total_tokens")
+    return usage(run).get("total_tokens")
 
 
 def latency_ms(run: RunTree) -> float | None:
@@ -106,6 +111,7 @@ def _short(value: Any, limit: int = 300) -> str:
 def flatten(run: RunTree, parent_id: str | None = None) -> list[dict]:
     """A run tree as rows, one per run, linked by `parent_id`: the shape LangSmith stores too."""
     metadata = (run.extra or {}).get("metadata", {})
+    used = usage(run)
     row = {
         "trace_id": str(run.trace_id),
         "id": str(run.id),
@@ -115,6 +121,9 @@ def flatten(run: RunTree, parent_id: str | None = None) -> list[dict]:
         "start": run.start_time.isoformat(),
         "latency_ms": latency_ms(run),
         "tokens": tokens(run),
+        "input_tokens": used.get("input_tokens"),
+        "output_tokens": used.get("output_tokens"),
+        "model": metadata.get("ls_model_name"),  # LangSmith prices runs by this name (Part 9)
         "error": run.error,
         "tags": list(run.tags or []),
         "metadata": {k: v for k, v in metadata.items() if not k.startswith(("ls_", "langgraph_", "checkpoint"))},
@@ -141,7 +150,7 @@ def total_tokens(run: RunTree) -> int:
 # --- the local trace log --------------------------------------------------------------------------
 
 
-def _append(path: Path, rows: list[dict]) -> None:
+def append_rows(path: Path, rows: list[dict]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as f:
         for row in rows:
@@ -149,7 +158,7 @@ def _append(path: Path, rows: list[dict]) -> None:
 
 
 def save_trace(run: RunTree, path: Path | None = None) -> None:
-    _append(path or TRACES_PATH, flatten(run))
+    append_rows(path or TRACES_PATH, flatten(run))
 
 
 def load_rows(path: Path) -> list[dict]:
@@ -197,5 +206,5 @@ def record_feedback(
     }
     if langsmith_enabled():
         Client().create_feedback(run_id, key=key, score=float(score), comment=comment)
-    _append(path or FEEDBACK_PATH, [record])
+    append_rows(path or FEEDBACK_PATH, [record])
     return record

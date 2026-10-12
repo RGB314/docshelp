@@ -56,6 +56,7 @@ class FakeChatModel(BaseChatModel):
     structured: dict[Any, list] = Field(default_factory=dict)
     seen: list[list[BaseMessage]] = Field(default_factory=list)
     bound: list[list[str]] = Field(default_factory=list)
+    default: str | None = None  # the reply once `replies` runs out (for whole batches of traffic); None: fail
 
     @property
     def _llm_type(self) -> str:
@@ -63,7 +64,7 @@ class FakeChatModel(BaseChatModel):
 
     def _next(self, messages: list[BaseMessage]) -> AIMessage:
         self.seen.append(list(messages))
-        reply = self.replies.pop(0)
+        reply = self.replies.pop(0) if self.replies or self.default is None else self.default
         if isinstance(reply, Exception):
             raise reply
         reply = AIMessage(reply) if isinstance(reply, str) else reply

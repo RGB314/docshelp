@@ -30,3 +30,4 @@ graph.mmd
 !.claude/settings.json
 .vscode/
 .idea/
+data/monitoring/

@@ -16,8 +16,8 @@ to be built, in what order, and how to pick the work up in a new session.
 | 5 | LangSmith observability and evaluation (absorbs `stages/04`) | ✅ Merged (PR #9) |
 | 6 | Agent projects: ambient inbox and deep research | ✅ Merged (PR #10) |
 | 7 | Deep Agents (plus dcode, Fleet and MDA twins) | ✅ Merged (PR #11) |
-| 8 | Deployment (absorbs `stages/05`) | ✅ Shipped (branch `feat/curriculum-part8-deployment`) |
-| 9 | Production monitoring and the improvement loop | ⏭️ Next |
+| 8 | Deployment (absorbs `stages/05`) | ✅ Merged (PR #12) |
+| 9 | Production monitoring and the improvement loop | ✅ Shipped (branch `feat/curriculum-part9-monitoring`) |
 
 Update this table in the same PR that ships a part.
 
@@ -265,23 +265,43 @@ Gotchas found:
 
 Reuse in Part 9: `support_agent` assistants for A/B tests, `/health` and the store for dashboards, the fake server for e2e.
 
-### Part 9: Monitoring and the improvement loop (Monitoring Production Agents; LangSmith Engine; Essentials M4–M5)
-1. Cost: `UsageMetadataCallbackHandler` plus a pricing table.
-2. Latency and errors.
-3. Sentiment as an online evaluator: a local twin plus the free LangSmith version.
-4. A/B testing by metadata.
-5. PII and prompt-injection guard middleware, with threshold alerts.
-6. Automations and rules.
+### Part 9: Monitoring and the improvement loop (Monitoring Production Agents; LangSmith Engine; Essentials M4–M5; Observability & Evals M5; Building Reliable Agents M3)
+Shipped as built. No new dependencies. New data: `data/traffic.json` (12 production-like conversations: angry
+customers, injections, pasted PII) and `data/pricing.json` (illustrative tiers; local models cost 0). Lessons log
+to `data/monitoring/` (git-ignored). New task: `uv run poe dashboard`.
 
-Twins:
-- **Insights:** an LLM clusters the topics in the local trace log.
-- **Dashboards:** `uv run poe dashboard` writes a static HTML report.
-- **Engine / the agent development lifecycle (ADLC) loop:**
-  1. Find the failing traces.
-  2. An LLM proposes a prompt fix.
-  3. An experiment compares the old prompt with the new one.
-  4. Ship the fix as a new prompt version.
-  5. Monitor it.
+Shared code:
+- `monitoring.py`: `simulate_traffic` (traced turns with thread/plan/variant metadata, optional `fault` injection),
+  `ensure_traffic` (each lesson works alone; later ones reuse the log), `summarize` (one row per trace, tags of
+  every run), `run_filter` (LangSmith's filter language, incl. metadata and feedback key/value pairs), costs,
+  percentiles, online evaluators (`ensure_feedback` scores what each evaluator hasn't), rules, alerts, A/B helpers.
+- `guardrails.py`: `PIIMiddleware`, the trace anonymizer, `injection_guard` (tags its own run).
+- `insights.py`, `dashboard.py`, `engine.py`: the Insights, Dashboards and Engine twins.
+- `observability.flatten` rows gained `model`, `input_tokens`, `output_tokens`; `_append` is now `append_rows`.
+
+Lessons:
+1. Production traffic and filters.
+2. Cost tracking: per turn and plan, what-if tiers, `get_usage_metadata_callback`.
+3. Latency percentiles, per-run breakdown, an injected outage.
+4. Online evaluators: sentiment, helpfulness, `cites_docs`; filters and sampling; feedback.
+5. Automations (annotation queue, dataset, webhooks) and windowed alerts.
+6. Security: PII never reaches the model (proved by a callback), injections refused and tagged.
+7. A/B test of two prompt versions from the hub, stable assignment, two-proportion test.
+8. Insights twin: summarise threads, then cluster.
+9. Dashboard twin: static HTML, no JavaScript.
+10. Engine 1-2: failures -> `PromptFix` -> hub tag "candidate".
+11. Engine 3-5 (capstone): experiment + pairwise -> `ship_decision` -> move "prod" -> monitor before/after.
+
+Gotchas found:
+- `and`/`or`/`not` are Python keywords: `run_filter` renames them before `ast.parse`.
+- `get_current_run_tree()` inside LangChain middleware has no `parent_run`: tag your own run, find traces by
+  tree filter (LangSmith) or by the union of run tags (local).
+- Judges on tiny models sometimes return invalid structure: evaluators, insights, the fix proposal and the
+  pairwise judge skip that item instead of failing the lesson.
+
+The curriculum is complete with this part. Keeping it working: bump dependencies in one PR, run
+`DOCSHELP_E2E_MODEL=qwen2.5:0.5b uv run poe e2e` (or let `docker-e2e` do it), and re-check the Academy catalogue
+for new courses; map any new lesson in `CURRICULUM.md` before writing it.
 
 ### Exam
 The LCAE Practice Exam is covered by the `### Part N self-check` sections in `CURRICULUM.md`.

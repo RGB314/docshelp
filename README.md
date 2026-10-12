@@ -21,7 +21,7 @@ with self-check questions.
 | 6 | **Agent projects:** an ambient support-inbox agent (triage, Agent Inbox, learning memory, evals) and a deep-research agent (scoping, parallel researchers, MCP, reports) | `uv run poe lesson 6.1` … `6.9` | ✅ |
 | 7 | **Deep Agents:** planning, filesystem backends, a shell and an interpreter, offloading, skills, `AGENTS.md` memory, subagent teams (sync, dynamic, async), agents from templates, dcode | `uv run poe lesson 7.1` … `7.16` | ✅ |
 | 8 | **Deployment:** LangGraph Server, the SDK and `RemoteGraph`, threads and runs, double texting, assistants, custom routes, the server's Store, auth, Chat UI and your own UI, crons, Docker | `uv run poe server`, then `uv run poe lesson 8.1` … `8.13` | ✅ |
-| 9 | **Production:** cost, quality and security monitoring, online evals, the improvement loop | (planned) | |
+| 9 | **Production monitoring:** traffic and filters, cost, latency and errors, online evaluators and sentiment, automations and alerts, security, A/B tests, Insights and dashboards twins, and the Engine improvement loop | `uv run poe lesson 9.1` … `9.11`, `uv run poe dashboard` | ✅ |
 
 ## Contents
 
@@ -47,6 +47,7 @@ with self-check questions.
   - [Part 6: Agent projects (ambient inbox and deep research)](#part-6-agent-projects-ambient-inbox-and-deep-research)
   - [Part 7: Deep Agents](#part-7-deep-agents)
   - [Part 8: Deployment](#part-8-deployment)
+  - [Part 9: Production monitoring and the improvement loop](#part-9-production-monitoring-and-the-improvement-loop)
 - [Project layout](#project-layout)
 - [Tests](#tests)
 - [How the provider layer is designed](#how-the-provider-layer-is-designed)
@@ -269,6 +270,7 @@ Embeddings run locally on your CPU (`BAAI/bge-small-en-v1.5` via fastembed). The
 | The server with auth (lesson 8.10) | `uv run poe server-auth` | `docker compose up -d server-auth` |
 | Tests | `uv run poe test` | `docker compose run --rm app poe test` |
 | Provider check | `uv run poe doctor` | `docker compose run --rm app poe doctor` |
+| Monitoring dashboard (Part 9) | `uv run poe dashboard` | `docker compose run --rm app poe dashboard` |
 
 Lessons live in `lessons/p<part>_<topic>/<NN>_<topic>.py`. Each one opens with a docstring naming the Academy
 lessons it covers and the concepts it teaches. Each has a `run()` the tests drive with a scripted model and a
@@ -422,6 +424,27 @@ Studio is at <https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024>
 | 8.12 Ambient agent deployment | an ingest graph starts one run per email, a cron schedules it, drafts wait in an inbox | ingesting twice answers nothing twice |
 | 8.13 Shipping to production | the generated production Dockerfile, this repo's compose services, the checklist | the same client code, a different URL |
 
+### Part 9: Production monitoring and the improvement loop
+
+Lesson 9.1 plays the conversations in `data/traffic.json` (angry customers, injections, pasted card numbers)
+through the support agent and logs every turn to `data/monitoring/traces.jsonl`. The other lessons analyse that
+log, generating it first if it's empty, so each also runs on its own. With a LangSmith key the traces also go
+to your project, and each lesson names the LangSmith feature it mirrors.
+
+| Lesson | What you see | Look for |
+|---|---|---|
+| 9.1 Production traffic and filters | traffic traced with thread, plan and variant metadata; LangSmith's filter language run locally | `and(eq(metadata_key, "plan"), eq(metadata_value, "team"))` |
+| 9.2 Cost tracking | tokens and cost per turn and per plan, input vs output, what the traffic would cost on hosted tiers | every tool round re-sends the conversation |
+| 9.3 Latency and errors | p50/p95/p99, time per model and tool run, an injected provider outage grouped by error type | the tail, not the mean |
+| 9.4 Online evaluators | sentiment and helpfulness judges plus a code check, with filters and sampling, writing feedback | the unhappy customers, found automatically |
+| 9.5 Automations and alerts | rules that queue errors for review, collect uncited answers into a dataset and notify security; windowed alerts | what fires, and why |
+| 9.6 Security monitoring | PII redacted before the model sees it, injections refused and tagged, the trace anonymizer | proof the card number never reached the model |
+| 9.7 A/B testing | two prompt versions, customers split by a stable hash, compared on live scores with a significance test | "not significant yet" |
+| 9.8 Insights | every conversation summarised, then grouped into categories with counts (LangSmith Insights twin) | where to fix first |
+| 9.9 Dashboards | one static HTML page: tiles, latency histogram, by plan and variant, scores, slowest traces, alerts | `data/reports/dashboard.html` |
+| 9.10 Engine: find and fix | failures from the online scores, then an LLM's diagnosis and a new prompt saved as "candidate" | production is untouched |
+| 9.11 Engine: test, ship, monitor | old vs candidate on failures plus regressions, a pairwise judge, ship only if better, then before/after | the whole lifecycle in one loop |
+
 ## Project layout
 
 ```
@@ -431,6 +454,7 @@ data/changelog.md       release notes; data/sample_tickets.jsonl: past tickets (
 data/triage_dataset.json  support emails labelled needs_ticket (lesson 5.8)
 data/inbox/             the support inbox for the ambient agent, with evaluation labels (Part 6)
 data/logs/              a customer's sync client log (Part 7)
+data/traffic.json       simulated production conversations; data/pricing.json: token prices (Part 9)
 skills/                 deep-agent skills: refund-policy, log-analysis (Part 7)
 agents/                 agent templates, the Fleet twin (lesson 7.15)
 .deepagents/            Deep Agents Code (dcode) project config: memory, skill, subagent, MCP (lesson 7.16)
@@ -460,6 +484,9 @@ src/docshelp/
   docs_mcp_server.py    an MCP server exposing data/docs/ as files (lesson 6.7)
   deep.py               Deep Agents: tools, backends, subagent team, local agent server, the Ops analyst (Part 7)
   agent_templates.py    agents from Markdown templates and dcode project folders (lessons 7.15-7.16)
+  monitoring.py         traffic, trace summaries, filter language, cost, online evaluators, rules, alerts, A/B (Part 9)
+  guardrails.py         PII middleware, trace anonymizer and the prompt-injection guard (lesson 9.6)
+  insights.py, dashboard.py, engine.py   Insights, Dashboards and Engine twins (lessons 9.8-9.11)
   graph.py              the LangGraph support graph, Part 3 capstone (dependencies injectable)
   server.py             graphs served by LangGraph Server / Studio (Part 8)
   deployment.py         the served support agent, the inbox ingest graph, store embeddings, client helpers (Part 8)
@@ -586,4 +613,5 @@ it's just as useful for humans. `CLAUDE.md` points Claude Code at it.
   (and costs nothing) everywhere.
 - `InMemorySaver` / `InMemoryVectorStore` keep the demo dependency-free. For production, swap in
   `langgraph-checkpoint-postgres` and a persistent vector store; the rest of the code doesn't change.
-- What's next is in [ROADMAP.md](ROADMAP.md) (the build plan and status) and [CURRICULUM.md](CURRICULUM.md): production monitoring and the improvement loop (Part 9).
+- All nine parts are built. [ROADMAP.md](ROADMAP.md) records how each was built and what to watch when the libraries
+  change; [CURRICULUM.md](CURRICULUM.md) maps every Academy lesson and ends each part with self-check questions.

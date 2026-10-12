@@ -25,7 +25,7 @@ Run `uv run poe lessons` to list the lessons. Run one with `uv run poe lesson <n
 | 6 | Agent projects: an ambient support-inbox agent and a deep-research agent | 1–5 | ✅ shipped |
 | 7 | Deep Agents: planning, filesystems, sandboxes, skills, memory, subagents, agents-from-config | 1–6 | ✅ shipped |
 | 8 | Deployment: LangGraph Server, SDK, assistants, double texting, custom routes, auth, Store, Chat UI | 3–7 | ✅ shipped |
-| 9 | Production: cost, quality, security monitoring, online evals, automations, and the improvement loop | 5, 8 | planned |
+| 9 | Production: cost, quality, security monitoring, online evals, automations, and the improvement loop | 5, 8 | ✅ shipped |
 
 ## Free vs paid: what runs where
 
@@ -36,12 +36,12 @@ Run `uv run poe lessons` to list the lessons. Run one with `uv run poe lesson <n
 | LangSmith tracing, datasets, experiments, Prompt Hub, annotation queues, online evaluators | Free LangSmith Developer account (optional; every lesson also runs locally) |
 | LangSmith Studio, `langgraph dev` | Free, local |
 | LangSmith Deployment (cloud), Managed Deep Agents | `langgraph dev` / Docker locally (Part 8); cloud deployment explained only (lesson 8.13) |
-| LangSmith Insights, Dashboards, Engine, Fleet | Local twins (Parts 7 and 9) that teach the same concept |
+| LangSmith Insights, Dashboards, Engine, Fleet, alerts | Local twins (Parts 7 and 9) that teach the same concept: `src/docshelp/insights.py`, `dashboard.py` (`uv run poe dashboard`), `engine.py`, `monitoring.py` |
 
 ## Coverage matrix
 
 Setup, resources, feedback, transcript and conclusion pages are omitted. Every teaching lesson is listed.
-**Covered by** is either the lesson that covers it or the part where it is planned.
+**Covered by** names the lesson that covers it.
 
 ### Quickstart: LangChain Essentials (Python)
 
@@ -133,20 +133,20 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 | M3 L1 Playground, L2 Prompt Hub, L3 Prompt Engineering Lifecycle, L4 Polly | `lessons/p5_langsmith/10_prompt_engineering.py` (hub: `src/docshelp/prompts.py`; Playground and Polly are walked through in the docstring) |
 | M4 L1 User Feedback | `lessons/p5_langsmith/11_user_feedback.py` |
 | M4 L2 Annotation Queues | `lessons/p5_langsmith/12_annotation_queues.py` |
-| M5 L1 Filtering, L2 Online Evaluation, L3 Automations, L4 Monitoring, L5 Custom Dashboards | Part 9 (planned) |
+| M5 L1 Filtering, L2 Online Evaluation, L3 Automations, L4 Monitoring, L5 Custom Dashboards | `lessons/p9_monitoring/01_production_traffic_and_filters.py`, `lessons/p9_monitoring/04_online_evaluators.py`, `lessons/p9_monitoring/05_automations_and_alerts.py`, `lessons/p9_monitoring/09_dashboards.py` (filter language: `src/docshelp/monitoring.py`) |
 
 ### Building Reliable Agents with LangSmith
 
 | Academy lesson | Covered by |
 |---|---|
-| Intro: The Agent Development Lifecycle | Part 9 (planned) |
+| Intro: The Agent Development Lifecycle | `lessons/p9_monitoring/10_engine_find_and_fix.py` (loop: `src/docshelp/engine.py`) |
 | M1 L1 Observability, L2 Tracing with LangSmith | `lessons/p5_langsmith/01_tracing_basics.py` |
 | M1 L3 Analyzing your Agent | `lessons/p5_langsmith/03_threads_and_analysis.py` |
 | M2 L1 Evaluating Agents, L2 Creating Datasets | `lessons/p5_langsmith/04_datasets.py`, `lessons/p5_langsmith/09_evals_as_tests.py` |
 | M2 L3 Running Experiments | `lessons/p5_langsmith/06_experiments.py` |
 | M2 L4 Code-based Eval, L5 LLM-as-Judge | `lessons/p5_langsmith/05_evaluators.py` |
 | M2 L6 Pairwise Evaluations | `lessons/p5_langsmith/07_pairwise.py` |
-| M3 L1 Moving Towards Production, L2 Insights Agent, L3 Online Evals, L4 Automations | Part 9 (planned) |
+| M3 L1 Moving Towards Production, L2 Insights Agent, L3 Online Evals, L4 Automations | `lessons/p9_monitoring/01_production_traffic_and_filters.py`, `lessons/p9_monitoring/08_insights.py`, `lessons/p9_monitoring/04_online_evaluators.py`, `lessons/p9_monitoring/05_automations_and_alerts.py` |
 
 ### Quickstart: LangSmith Essentials
 
@@ -156,8 +156,8 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 | M1 What is Tracing?, Capstone | `lessons/p5_langsmith/01_tracing_basics.py`, `lessons/p5_langsmith/03_threads_and_analysis.py` |
 | M2 Datasets and Offline Evals, Experiments, Capstone | `lessons/p5_langsmith/04_datasets.py`, `lessons/p5_langsmith/06_experiments.py`, `lessons/p5_langsmith/09_evals_as_tests.py` |
 | M3 Deployments | `lessons/p8_deployment/01_deployment_concepts.py`, `lessons/p8_deployment/13_shipping_to_production.py` |
-| M4 Online Evaluators and Automations, Annotation Queues, Insights, Dashboards, Capstone | Part 9 (planned) |
-| M5 Closing the Loop, Automating the ADLC with LangSmith Engine | Part 9 (planned) |
+| M4 Online Evaluators and Automations, Annotation Queues, Insights, Dashboards, Capstone | `lessons/p9_monitoring/04_online_evaluators.py`, `lessons/p9_monitoring/05_automations_and_alerts.py`, `lessons/p9_monitoring/08_insights.py`, `lessons/p9_monitoring/09_dashboards.py`, `lessons/p9_monitoring/11_engine_test_ship_monitor.py` (annotation queues first in `lessons/p5_langsmith/12_annotation_queues.py`) |
+| M5 Closing the Loop, Automating the ADLC with LangSmith Engine | `lessons/p9_monitoring/10_engine_find_and_fix.py`, `lessons/p9_monitoring/11_engine_test_ship_monitor.py` |
 
 ### Project: Ambient Agents with LangGraph
 
@@ -229,18 +229,18 @@ Setup, resources, feedback, transcript and conclusion pages are omitted. Every t
 
 | Academy lesson | Covered by |
 |---|---|
-| M1 Token and Cost Breakdowns, Tracking Costs, Viewing Costs | Part 9 (planned) |
-| M2 Analyze Trends with Insights | Part 9 (planned) |
-| M3 Monitoring Latency and Errors, Monitoring User Sentiment, A/B Testing | Part 9 (planned) |
-| M4 Monitoring Security, Setting Up Alerts | Part 9 (planned) |
-| Capstone Project | Part 9 (planned) |
+| M1 Token and Cost Breakdowns, Tracking Costs, Viewing Costs | `lessons/p9_monitoring/02_cost_tracking.py` (prices: `data/pricing.json`) |
+| M2 Analyze Trends with Insights | `lessons/p9_monitoring/08_insights.py` (local twin: `src/docshelp/insights.py`) |
+| M3 Monitoring Latency and Errors, Monitoring User Sentiment, A/B Testing | `lessons/p9_monitoring/03_latency_and_errors.py`, `lessons/p9_monitoring/04_online_evaluators.py`, `lessons/p9_monitoring/07_ab_testing.py` |
+| M4 Monitoring Security, Setting Up Alerts | `lessons/p9_monitoring/06_security_monitoring.py`, `lessons/p9_monitoring/05_automations_and_alerts.py` (guards: `src/docshelp/guardrails.py`) |
+| Capstone Project | `lessons/p9_monitoring/11_engine_test_ship_monitor.py` (with `lessons/p9_monitoring/09_dashboards.py`) |
 
 ### Autonomous Agent Improvement with LangSmith Engine
 
 | Academy lesson | Covered by |
 |---|---|
-| What is the ADLC?, Creating a Recruiting Agent, Setting Up Engine | Part 9 (planned) |
-| Build: Engine Proposes a Fix, Test: Testing Engine's Fix, Deploy: Shipping the Fix, Monitor | Part 9 (planned) |
+| What is the ADLC?, Creating a Recruiting Agent, Setting Up Engine | `lessons/p9_monitoring/10_engine_find_and_fix.py` (the agent is DocsHelp, not a recruiter) |
+| Build: Engine Proposes a Fix, Test: Testing Engine's Fix, Deploy: Shipping the Fix, Monitor | `lessons/p9_monitoring/10_engine_find_and_fix.py`, `lessons/p9_monitoring/11_engine_test_ship_monitor.py` |
 
 ### Beyond the Academy
 
@@ -726,4 +726,61 @@ there stalls every user, and `langgraph dev` reports it as a `BlockingError`.
 
 Each email's thread id is a `uuid5` of the email id. Ingesting creates the thread only if it doesn't exist and starts a
 run only if the thread has none. So the cron can fetch the same emails every 15 minutes safely.
+</details>
+
+### Part 9 self-check
+
+<details>
+<summary>1. Why monitor p95 latency rather than the average, and why alert on a time window?</summary>
+
+The average hides the slow tail: a few very slow requests barely move it, but those customers are the ones who
+leave. p95 is what one request in twenty waits. A window (say, error rate over 15 minutes, with a minimum
+number of traces) separates a real incident from one unlucky request, so alerts stay worth answering.
+</details>
+
+<details>
+<summary>2. How do online evaluators differ from Part 5's offline evaluators?</summary>
+
+They run on production traces as they arrive, so there's no reference answer: they judge what's observable
+(customer sentiment, helpfulness, citations). Each is a rule with a filter and a sampling rate, because LLM
+judges cost money, and their scores become feedback on the trace that filters, rules and dashboards use.
+</details>
+
+<details>
+<summary>3. An agent turn used 4,000 tokens for a 50-word answer. Where do you look, and what usually explains it?</summary>
+
+The trace's LLM runs: each model call re-sends the system prompt, tools and whole conversation, and tool use
+adds calls. Input tokens dominate. Fixes: fewer tool rounds, shorter tool results, trimming or summarizing
+history (Part 2.6), a smaller model for simple steps (2.8).
+</details>
+
+<details>
+<summary>4. Why does the injection guard tag a run, and how do you find tagged traces when the tag isn't on the root?</summary>
+
+The tag turns a blocked attack into a monitorable event: filters, rules, alerts and dashboards can count it. A
+tag on a run inside the trace is found with a tree filter (`tree_filter='has(tags, "prompt_injection")'` in
+LangSmith); the local summaries carry the tags of every run for the same reason.
+</details>
+
+<details>
+<summary>5. Variant B was helpful 7 times out of 8, variant A 5 times out of 6. Ship B?</summary>
+
+Not on that evidence: with samples this small the difference is noise (a two-proportion test gives a large
+p-value). Decide the metric and sample size first, assign customers stably by hashing their id, and run until
+the sample is big enough.
+</details>
+
+<details>
+<summary>6. What has to be in place before an Engine-style loop can fix a prompt on its own?</summary>
+
+Traces with useful metadata, online evaluators that flag failures, the prompt in a hub so a fix is a new
+version, an experiment with the failing questions plus a regression set, and a ship gate (no regression,
+preferred by a pairwise judge). Shipping moves the "prod" tag; rollback moves it back.
+</details>
+
+<details>
+<summary>7. Map the agent development lifecycle onto this course.</summary>
+
+Build: Parts 1–4, 6–7. Test: Part 5 (datasets, evaluators, experiments). Deploy: Part 8. Monitor: Part 9.1–9.9.
+Improve: Part 9.10–9.11, which feeds production failures back into build and test.
 </details>
