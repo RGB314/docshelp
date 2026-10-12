@@ -62,6 +62,9 @@ Practical notes:
   Here-strings piped to `-F -` fail.
 - `load_lesson()` executes the module again on each call. Load it once per test when you compare classes.
 - `FakeChatModel` pops replies in call order. Parallel branches pop in a non-deterministic order, so assert on sets.
+- Long sync runs with a checkpointer (deep agents with subagents) can deadlock in LangGraph 1.2 on small CI runners:
+  async-durability checkpoint saves fill the thread pool waiting on each other. Use `durability="sync"` there
+  (lesson 7.14). `faulthandler_timeout` in pyproject dumps the stacks of any test stuck for 5 minutes.
 
 ## Plan per part
 
