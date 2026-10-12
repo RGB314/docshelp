@@ -9,6 +9,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.request
 from collections.abc import Iterator, Mapping
@@ -77,14 +78,16 @@ def _langgraph_executable() -> str:
 
 
 @contextlib.contextmanager
-def langgraph_server(config_dir: Path, env: Mapping[str, str], startup_timeout: int = 120) -> Iterator[str]:
-    """Run `langgraph dev` for the langgraph.json in `config_dir`; yield its base URL."""
+def langgraph_server(
+    config_dir: Path, env: Mapping[str, str], startup_timeout: int = 120, config: str = "langgraph.json"
+) -> Iterator[str]:
+    """Run `langgraph dev` for the `config` file in `config_dir`; yield its base URL."""
     port = free_port()
     url = f"http://127.0.0.1:{port}"
-    log = config_dir / "server.log"
+    log = Path(tempfile.mkdtemp()) / "server.log"  # never inside the repo
     with log.open("w", encoding="utf-8") as out:
         proc = subprocess.Popen(
-            [_langgraph_executable(), "dev", "--port", str(port), "--no-browser", "--no-reload"],
+            [_langgraph_executable(), "dev", "--config", config, "--port", str(port), "--no-browser", "--no-reload"],
             cwd=config_dir,
             env=dict(env),
             stdout=out,

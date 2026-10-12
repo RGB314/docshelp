@@ -54,7 +54,7 @@ MANIFEST_KEYS = {
 def run(client, url: str, manifest: Path = PROJECT_ROOT / "langgraph.json") -> dict:
     config = json.loads(manifest.read_text(encoding="utf-8"))
     header(f"{manifest.name}: the deployment manifest")
-    for key, value in config.items():
+    for key in config:
         if key in MANIFEST_KEYS:
             print(f"  {key:15} {MANIFEST_KEYS[key]}")
     for graph_id, spec in config["graphs"].items():

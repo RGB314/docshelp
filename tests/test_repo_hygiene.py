@@ -111,7 +111,6 @@ def test_license_is_declared():
 
 APP_CODE = [
     *sorted((ROOT / "lessons").glob("p*/*.py")),
-    *sorted((ROOT / "stages").glob("*.py")),
     *sorted((ROOT / "evals").glob("*.py")),
     *sorted((ROOT / "agents").glob("*.md")),
     *sorted((ROOT / "skills").glob("*/*")),
@@ -122,7 +121,7 @@ APP_CODE = [
             "graph.py", "agents.py", "team.py", "middleware.py", "email_assistant.py", "mcp_server.py",
             "react.py", "chatbot.py", "server.py", "research.py", "memory.py", "sources.py",
             "observability.py", "evals.py", "prompts.py", "ambient.py", "deep_research.py", "docs_mcp_server.py",
-            "deep.py", "agent_templates.py",
+            "deep.py", "agent_templates.py", "deployment.py", "auth.py", "webapp.py",
         )
     ),
 ]

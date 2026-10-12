@@ -63,7 +63,7 @@ def chat_over_http(url: str, question: str, assistant: str = "support_agent") ->
             for event, data in read_events(response):
                 events[event] = events.get(event, 0) + 1
                 if event == "messages":  # (chunk, metadata): a token, or a whole tool message
-                    chunk, metadata = data
+                    chunk, _metadata = data  # metadata says which node and run the token came from
                     if chunk.get("type") in ("AIMessageChunk", "ai") and isinstance(chunk.get("content"), str):
                         tokens.append(chunk["content"])
                         print(chunk["content"], end="", flush=True)

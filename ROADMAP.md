@@ -15,9 +15,9 @@ to be built, in what order, and how to pick the work up in a new session.
 | 4 | LangGraph at scale + long-term memory | ✅ Merged (PR #8) |
 | 5 | LangSmith observability and evaluation (absorbs `stages/04`) | ✅ Merged (PR #9) |
 | 6 | Agent projects: ambient inbox and deep research | ✅ Merged (PR #10) |
-| 7 | Deep Agents (plus dcode, Fleet and MDA twins) | ✅ Shipped (branch `feat/curriculum-part7-deep-agents`) |
-| 8 | Deployment (absorbs `stages/05`) | ⏭️ Next |
-| 9 | Production monitoring and the improvement loop | Planned |
+| 7 | Deep Agents (plus dcode, Fleet and MDA twins) | ✅ Merged (PR #11) |
+| 8 | Deployment (absorbs `stages/05`) | ✅ Shipped (branch `feat/curriculum-part8-deployment`) |
+| 9 | Production monitoring and the improvement loop | ⏭️ Next |
 
 Update this table in the same PR that ships a part.
 
@@ -232,21 +232,35 @@ Reuse in later parts:
 - `LocalAgentServer` shows the client calls Part 8's SDK lessons make for real.
 - `agent_templates` for Part 9's A/B assistants if useful.
 
-### Part 8: Deployment (Intro to LangGraph M6; Intro to LangSmith Deployment; LangSmith Essentials M3)
-Replaces `stages/05`.
-1. Concepts, plus `langgraph dev`.
-2. Connecting with the SDK and `RemoteGraph`.
-3. Threads, runs and streaming.
-4. Double texting: reject, enqueue, interrupt and rollback.
-5. Assistants [a "concise" and a "detailed" configuration].
-6. Custom routes through `http.app` [`/health`, `/tickets`].
-7. A Store `index` that uses fastembed through a `path:embed` function.
-8. Auth with `@auth.authenticate` and `@auth.on` [customers see only their own threads].
-9. The Part 7 deep agent on the server: it's already served as `ops_analyst`, so teach its memory with the server's Store.
-10. Agent Chat UI against localhost.
-11. Docker (`compose.yaml`).
+### Part 8: Deployment (Intro to LangGraph M6; Intro to LangSmith Deployment; LangSmith Essentials M3; Ambient Agents M6)
+Shipped as built. Replaced `stages/05` (the `stage5` task is gone). Dependency added: `pyjwt`. New: `deployment.py`,
+`auth.py`, `webapp.py` + `chat.html`, `langgraph.auth.json`, the `server-auth` task and compose service (port 2025).
+`langgraph.json` serves 9 graphs (new: `support_agent`, `memory_agent`, `inbox_agent`, `inbox_ingest`,
+`agent_from_template`), custom routes and a semantic store index (local fastembed via `deployment.embed`).
 
-Cloud deployment is explained in the README only.
+Lessons are SDK clients, `run(client, ...)`; `main()` checks the model setup, then `connect()`s (exit with how to start the server).
+1. Concepts: the manifest, server info, one assistant per graph, schemas.
+2. Sync/async clients, stateless runs, `RemoteGraph` (also as a node in a local graph).
+3. Threads, runs, stream modes, background runs, approval over the API, history, search, copy.
+4. Double texting: all four strategies on one agent.
+5. Assistants from `AssistantContext` (style, model), versions, `set_latest`. The in-memory runtime doesn't
+   restore `context` on `set_latest`; the lesson shows and says so.
+6. Custom routes `/health`, `/tickets`, `/ui`.
+7. The server's Store: SDK access, the memory agent across threads, semantic search and filters.
+8. The Ops analyst on the server: approvals over the API, `AGENTS.md` in the server's Store.
+9. Deploying without code: a graph factory builds `agents/*.md` templates per assistant (`deepagents deploy` is deprecated).
+10. Auth: a local JWT issuer, owner filters, staff role, run context rewritten from the token, Store scoping.
+11. UIs: raw HTTP + SSE like a UI does, Agent Chat UI, Studio, Agent Inbox, the `/ui` page.
+12. Ambient deployment: `inbox_ingest` (loopback `get_client()`, idempotent `uuid5` threads), crons, the inbox of interrupts.
+13. Production: `langgraph dockerfile`, compose, Postgres/Redis, cloud deployment explained.
+
+Gotchas found:
+- The server refuses graphs compiled with a checkpointer: `on_server=True` on `build_memory_agent` and `build_inbox_agent`.
+- `langgraph dev` flags blocking calls (even `Path.resolve()` in `FilesystemBackend`): build such things in `asyncio.to_thread`.
+- `assistants.get_schemas` needs the assistant id, not the graph name.
+- Auth handlers must mutate `value["metadata"]` in place.
+
+Reuse in Part 9: `support_agent` assistants for A/B tests, `/health` and the store for dashboards, the fake server for e2e.
 
 ### Part 9: Monitoring and the improvement loop (Monitoring Production Agents; LangSmith Engine; Essentials M4–M5)
 1. Cost: `UsageMetadataCallbackHandler` plus a pricing table.

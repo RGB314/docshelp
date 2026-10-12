@@ -1,4 +1,4 @@
-"""E2E with a real model and no API keys: every lesson and stage against a local Ollama model.
+"""E2E with a real model and no API keys: every lesson against a local Ollama model.
 
 Opt-in (it needs Ollama and a pulled model), e.g.:
     ollama pull qwen2.5:0.5b
@@ -6,6 +6,8 @@ Opt-in (it needs Ollama and a pulled model), e.g.:
 CI runs this inside Docker Compose with the `ollama` service.
 
 Small models give weak answers; these tests check that everything runs to completion, not answer quality.
+Part 8's lessons are clients, so they run against this repo's own servers (`langgraph.json`, then
+`langgraph.auth.json`), started here with the real model.
 """
 
 import os
@@ -14,7 +16,7 @@ import pytest
 
 from docshelp.tasks import find_lessons
 
-from .helpers import ROOT, base_env, langgraph_server, ollama_ready, run_evals, run_lesson, run_stage
+from .helpers import ROOT, base_env, langgraph_server, ollama_ready, run_evals, run_lesson
 
 pytestmark = pytest.mark.e2e
 
@@ -27,8 +29,8 @@ requires_ollama = pytest.mark.skipif(
 )
 
 
-@pytest.fixture
-def ollama_env(tmp_path):
+@pytest.fixture(scope="module")
+def ollama_env():
     return base_env(
         DOCSHELP_PROVIDER="ollama",
         DOCSHELP_MODEL=MODEL,
@@ -38,12 +40,14 @@ def ollama_env(tmp_path):
     )
 
 
-# Lesson 1.4 needs an image-capable model, which the tiny CI model is not.
-TEXT_ONLY_LESSONS = [code for code, _ in find_lessons() if code != "1.4"]
+LESSONS = [code for code, _ in find_lessons()]
+# Lesson 1.4 needs an image-capable model, which the tiny CI model is not. Part 8 needs a server (below).
+STANDALONE_LESSONS = [code for code in LESSONS if code != "1.4" and not code.startswith("8.")]
+SERVER_LESSONS = [code for code in LESSONS if code.startswith("8.") and code != "8.10"]
 
 
 @requires_ollama
-@pytest.mark.parametrize("code", TEXT_ONLY_LESSONS)
+@pytest.mark.parametrize("code", STANDALONE_LESSONS)
 def test_lesson_runs_to_completion(ollama_env, code):
     result = run_lesson(code, ollama_env, timeout=1500)
     assert result.returncode == 0, result.stdout[-3000:] + result.stderr[-3000:]
@@ -57,9 +61,14 @@ def test_evals_run_against_the_real_model(ollama_env):
     assert "passed" in result.stdout or "failed" in result.stdout
 
 
-@requires_ollama
-def test_stage5_against_the_real_server(ollama_env):
+@pytest.fixture(scope="module")
+def server_url(ollama_env):
     with langgraph_server(ROOT, ollama_env, startup_timeout=300) as url:
-        result = run_stage("05_langgraph_server.py", {**ollama_env, "LANGGRAPH_URL": url}, timeout=900)
+        yield url
+
+
+@requires_ollama
+@pytest.mark.parametrize("code", SERVER_LESSONS)
+def test_deployment_lesson_against_the_real_server(ollama_env, server_url, code):
+    result = run_lesson(code, {**ollama_env, "LANGGRAPH_URL": server_url}, timeout=1500)
     assert result.returncode == 0, result.stdout[-3000:] + result.stderr[-3000:]
-    assert result.stdout.count("DocsHelp:") == 2

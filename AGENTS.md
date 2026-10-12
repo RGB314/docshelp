@@ -28,7 +28,7 @@ Every command works the same in PowerShell, cmd, Git Bash, macOS and Linux. Don'
 | Provider setup check | `uv run poe doctor` |
 | List / run lessons | `uv run poe lessons`, `uv run poe lesson 1.6` (extra args are passed to the lesson) |
 | Evals against a real model (not offline) | `uv run poe evals` (lesson 5.9) |
-| Run the legacy stage | `uv run poe stage5` (needs `uv run poe server`) |
+| LangGraph Server for Part 8 | `uv run poe server` (:2024); with auth: `uv run poe server-auth` (:2025) |
 | Docker equivalents | `docker compose build`, then `docker compose run --rm app poe <task>` |
 
 Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both must pass.
@@ -55,11 +55,16 @@ Before finishing any change, run `uv run poe test` and `uv run poe e2e`. Both mu
   a model-call budget (`deep.budget`), because deep agents otherwise allow ~10,000 steps.
 - `skills/`, `agents/`, `.deepagents/`: deep-agent skills, agent templates (lesson 7.15), and this repo's Deep Agents
   Code config (lesson 7.16). Lessons and tests read them, so keep them consistent with the code.
+- `src/docshelp/{deployment,auth,webapp}.py` and `chat.html`: Part 8's served support agent, inbox ingest graph and
+  store embeddings; the server's auth handlers; custom routes. `langgraph.json` and `langgraph.auth.json` must stay
+  identical apart from `auth` (a test checks). Graphs on the server get no checkpointer or store (the server's are
+  used), and code that runs on the server must not block its event loop (use `asyncio.to_thread`).
 - `src/docshelp/{ingest,tools,console,tasks,server}.py`: RAG pipeline, tools, UTF-8 output, `poe` helpers
   (including the lesson runner), and the LangGraph Server entry point.
-- `lessons/p<part>_<topic>/<NN>_<topic>.py`: the curriculum. `stages/`: stage 5, until Part 8 replaces it.
+- `lessons/p<part>_<topic>/<NN>_<topic>.py`: the curriculum. Part 8's lessons are SDK clients: `run(client, ...)`.
 - `evals/`: evals as pytest tests (`@pytest.mark.langsmith`) that need a real model; never part of `poe test`.
-- `tests/`: unit tests (one `test_part<N>_*.py` per part). `tests/e2e/`: process-level and server tests.
+- `tests/`: unit tests (one `test_part<N>_*.py` per part). `tests/e2e/`: process-level and server tests; Part 8's
+  lessons run against `langgraph dev` serving the repo configs with `tests/e2e/fake_server/fake_app.py`'s fakes.
 
 ## Rules
 
