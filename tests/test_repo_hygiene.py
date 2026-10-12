@@ -10,7 +10,7 @@ import pytest
 from docshelp.providers import registry
 
 ROOT = Path(__file__).resolve().parents[1]
-SKIP_DIRS = {".venv", ".cache", ".git", ".pytest_cache", ".langgraph_api", "__pycache__", ".claude"}
+SKIP_DIRS = {".venv", ".cache", ".git", ".pytest_cache", ".langgraph_api", "__pycache__", ".claude", ".site", ".site-src"}
 TEXT_SUFFIXES = {
     ".py", ".md", ".toml", ".json", ".txt", ".example", ".yml", ".yaml", ".cfg", ".lock", ".sh", ".ps1",
     ".gitignore", ".gitattributes", ".dockerignore", "Dockerfile",
