@@ -1,6 +1,6 @@
 # DocsHelp: the LangChain ecosystem, one lesson at a time
 
-[![CI](https://github.com/RGB314/docshelp-langchain-curriculum/actions/workflows/ci.yml/badge.svg)](https://github.com/RGB314/docshelp-langchain-curriculum/actions/workflows/ci.yml)
+[![CI](https://github.com/arpitXraj/docshelp-langchain-curriculum/actions/workflows/ci.yml/badge.svg)](https://github.com/arpitXraj/docshelp-langchain-curriculum/actions/workflows/ci.yml)
 
 A small but realistic app, a support assistant for the made-up product **Nimbus Notes**, that grows lesson by
 lesson until it covers everything taught in the [LangChain Academy](https://academy.langchain.com/collections)
@@ -9,7 +9,7 @@ of a different toy project per course, and everything runs at **zero cost**: loc
 free-tier cloud models optionally, and no paid LangSmith features required.
 
 [CURRICULUM.md](CURRICULUM.md) maps every Academy lesson to the lesson here that teaches it, and ends each part
-with self-check questions. **The [course website](https://rgb314.github.io/docshelp-langchain-curriculum/)** presents the same material for reading: every
+with self-check questions. **The [course website](https://arpitxraj.github.io/docshelp-langchain-curriculum/)** presents the same material for reading: every
 lesson's concepts by part, the curriculum map, and the self-checks as collapsible questions.
 
 | Part | Theme | Run | Status |
@@ -503,7 +503,7 @@ to your project, and each lesson names the LangSmith feature it mirrors.
 | [`src/docshelp/insights.py`](src/docshelp/insights.py), [`src/docshelp/dashboard.py`](src/docshelp/dashboard.py), [`src/docshelp/engine.py`](src/docshelp/engine.py) | the Insights, Dashboards and Engine twins (lessons 9.8-9.11) |
 | [`src/docshelp/console.py`](src/docshelp/console.py) | UTF-8 terminal output on every OS |
 | [`src/docshelp/tasks.py`](src/docshelp/tasks.py) | `init-env`, `doctor` and the lesson runner behind `poe` |
-| [`src/docshelp/site.py`](src/docshelp/site.py) | the course website: the repo's Markdown plus a page per part from the lesson docstrings ([GitHub Pages](https://rgb314.github.io/docshelp-langchain-curriculum/)) |
+| [`src/docshelp/site.py`](src/docshelp/site.py) | the course website: the repo's Markdown plus a page per part from the lesson docstrings ([GitHub Pages](https://arpitxraj.github.io/docshelp-langchain-curriculum/)) |
 | [`src/docshelp/maintenance.py`](src/docshelp/maintenance.py) | `uv run poe maintenance`: the periodic health report ([MAINTENANCE.md](MAINTENANCE.md)) |
 
 **Curriculum, tests and project files**
