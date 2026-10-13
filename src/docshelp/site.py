@@ -21,8 +21,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-REPO = "https://github.com/RGB314/docshelp-langchain-curriculum"
-SITE_URL = "https://rgb314.github.io/docshelp-langchain-curriculum/"
+REPO = "https://github.com/arpitXraj/docshelp-langchain-curriculum"
+SITE_URL = "https://arpitxraj.github.io/docshelp-langchain-curriculum/"
 SOURCE_DIR = ROOT / ".site-src"
 BUILD_DIR = ROOT / ".site"
 
@@ -183,7 +183,7 @@ site_name: DocsHelp, the LangChain curriculum
 site_description: Every LangChain Academy course, applied to one support assistant, at zero cost.
 site_url: {SITE_URL}
 repo_url: {REPO}
-repo_name: RGB314/docshelp-langchain-curriculum
+repo_name: arpitXraj/docshelp-langchain-curriculum
 edit_uri: ""
 docs_dir: docs
 site_dir: ../.site
